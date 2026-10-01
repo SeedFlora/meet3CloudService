@@ -4,9 +4,9 @@ Praktikum COMP6991031, sesi 3. Repo kelas [SeedFlora/meet3CloudService](https://
 
 **Mulai dari [modul mahasiswa bergambar](MODUL_MAHASISWA.md).** Gambar menunjukkan tampilan web, status Docker, dan hasil perintah pada checkpoint utama. Gambar contoh bukan pengganti bukti praktik Anda sendiri.
 
-Untuk dosen tersedia [panduan kelas, rubrik, dan langkah rinci challenge A-F](PANDUAN_DOSEN_TEMPLATE.md). Versi PDF untuk dibaca atau dicetak: [modul mahasiswa](output/pdf/MODUL_MAHASISWA_LAB03.pdf), [panduan dosen](output/pdf/PANDUAN_DOSEN_LAB03.pdf), dan [panduan Git](output/pdf/PANDUAN_GIT_LAB03.pdf).
+Untuk dosen tersedia [panduan kelas, rubrik, dan langkah rinci challenge A-F](PANDUAN_DOSEN_TEMPLATE.md). Versi PDF untuk dibaca atau dicetak: [modul mahasiswa](output/pdf/MODUL_MAHASISWA_LAB03.pdf), [panduan dosen](output/pdf/PANDUAN_DOSEN_LAB03.pdf), [panduan Git](output/pdf/PANDUAN_GIT_LAB03.pdf), dan **[kunci jawaban mahasiswa terpisah](output/pdf/KUNCI_JAWABAN_MAHASISWA_LAB03.pdf)**. [Sumber Markdown kunci jawaban](KUNCI_JAWABAN_MAHASISWA_LAB03.md) memudahkan penyalinan kode.
 
-Verifikasi 1 Oktober 2026: Codespaces pada commit `5825663` berhasil menjalankan empat service, smoke **12 PASS/0 FAIL**, dan form web menyimpan catatan dengan **201 Created**. Penyelesaian sementara yang diuji lokal menghasilkan healthcheck **16 PASS/0 FAIL** dan challenge **15 PASS/0 FAIL**; solusi tidak disertakan dalam template. Challenge pada starter memang merah.
+Verifikasi 1 Oktober 2026: Codespaces pada commit `5825663` berhasil menjalankan empat service, smoke **12 PASS/0 FAIL**, dan form web menyimpan catatan dengan **201 Created**. Solusi yang diuji lokal menghasilkan healthcheck **16 PASS/0 FAIL** dan challenge **15 PASS/0 FAIL**. Kunci jawaban tersedia terpisah; challenge pada starter memang merah sebelum dikerjakan.
 
 ## Jalur kelas: GitHub Codespaces
 
