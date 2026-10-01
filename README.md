@@ -6,10 +6,9 @@ Praktikum COMP6991031, sesi 3. Repo kelas [SeedFlora/meet3CloudService](https://
 
 ## Jalur kelas: GitHub Codespaces
 
-1. Dosen mengunggah isi folder ini ke [repo kelas](https://github.com/SeedFlora/meet3CloudService) dan mengaktifkan **Template repository**; lihat [panduan dosen](PANDUAN_DOSEN_TEMPLATE.md).
-2. Mahasiswa membuka template tersebut, memilih **Use this template → Create a new repository**, lalu mengisi nama repo pribadi. Visibilitas repo mengikuti arahan dosen.
-3. Di repo pribadi, pilih **Code → Codespaces → Create codespace on main**. Tunggu `postCreateCommand` menyiapkan alat dan image. Bila persiapan image terputus, jalankan langkah berikut di terminal Codespace.
-4. Dari root repo Codespace:
+1. Buka [repo kelas](https://github.com/SeedFlora/meet3CloudService), pilih **Use this template → Create a new repository**, lalu isi nama repo pribadi. Visibilitas repo mengikuti arahan dosen.
+2. Di repo pribadi, pilih **Code → Codespaces → Create codespace on main**. Tunggu `postCreateCommand` menyiapkan alat dan image. Bila persiapan image terputus, jalankan langkah berikut di terminal Codespace.
+3. Dari root repo Codespace:
 
    ```bash
    docker compose config -q
@@ -18,7 +17,7 @@ Praktikum COMP6991031, sesi 3. Repo kelas [SeedFlora/meet3CloudService](https://
    bash tests/smoke.sh
    ```
 
-5. Di panel **Ports**, buka port **8080** untuk melihat web. Jika port terdeteksi dan diminta visibilitas, biarkan **Private** untuk praktikum. Lanjutkan [langkah DNS hingga TLS](MODUL_MAHASISWA.md#2-periksa-dns-dan-konektivitas-dari-toolbox).
+4. Di panel **Ports**, buka port **8080** untuk melihat web. Jika port terdeteksi dan diminta visibilitas, biarkan **Private** untuk praktikum. Lanjutkan [langkah DNS hingga TLS](MODUL_MAHASISWA.md#2-periksa-dns-dan-konektivitas-dari-toolbox).
 
 File `.devcontainer/devcontainer.json` dan `.github/workflows/ci.yml` sudah berada di **root repo**, sehingga Codespaces dan Actions dapat menemukannya.
 
