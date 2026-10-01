@@ -148,9 +148,11 @@
       setText('w-hosthdr', h.host || '-');
       setText('w-ua', h['user-agent'] || '-');
 
-      // Port container yang menerima request, dilihat dari sisi nginx ($scheme).
-      // (Di Codespaces browser memakai HTTPS ke GitHub, tetapi nginx tetap menerima HTTP.)
-      setText('link-web-port', h['x-forwarded-proto'] === 'https' ? 'host → 443' : 'host → 80');
+      // Port pada URL browser dapat berbeda dari port internal nginx.
+      // Codespaces juga dapat memakai HTTPS di browser lalu meneruskan HTTP ke nginx.
+      const browserPort = location.port || (location.protocol === 'https:' ? '443' : '80');
+      const webPort = h['x-forwarded-proto'] === 'https' ? '443' : '80';
+      setText('link-web-port', `${browserPort} → ${webPort}`);
 
       const conn = $('conn');
       if (h['x-forwarded-proto'] === 'https') {
