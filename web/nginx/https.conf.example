@@ -1,0 +1,35 @@
+# =============================================================================
+# HTTPS untuk tantangan desain. File ini BELUM aktif: nginx hanya memuat file
+# berakhiran .conf, jadi https.conf.example diabaikan.
+#
+# Cara mengaktifkan:
+#   1. Buat sertifikat self-signed (hasil: web/certs/lab.crt dan web/certs/lab.key)
+#        bash scripts/make-cert.sh
+#   2. Salin file ini menjadi https.conf (di folder yang sama)
+#        cp web/nginx/https.conf.example web/nginx/https.conf
+#   3. Di compose.yaml, tambahkan port "8443:443" pada service web
+#   4. Terapkan perubahan
+#        docker compose up -d --wait
+#   5. Uji dari toolbox
+#        curl --cacert /lab/web/certs/lab.crt https://web/api/health
+#
+# Tanpa file sertifikat, nginx gagal start setelah https.conf dibuat
+# (lihat pesannya dengan: docker compose logs web).
+# =============================================================================
+
+server {
+    listen 443 ssl default_server;
+    http2 on;
+    server_name localhost web;
+
+    # Sertifikat dan private key dari web/certs (di-mount read-only ke /etc/nginx/certs).
+    ssl_certificate     /etc/nginx/certs/lab.crt;
+    ssl_certificate_key /etc/nginx/certs/lab.key;
+
+    # Hanya protokol TLS modern. SSLv3, TLS 1.0, dan TLS 1.1 sudah dianggap tidak aman.
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_session_cache   shared:TLS:1m;
+    ssl_session_timeout 10m;
+
+    include /etc/nginx/conf.d/snippets/lab-locations.conf;
+}

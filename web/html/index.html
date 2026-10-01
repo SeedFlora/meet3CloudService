@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Net Web Lab — Praktikum 3</title>
+  <meta name="description" content="Aplikasi tiga tier (nginx, Node.js, PostgreSQL) untuk Praktikum Pertemuan 3 Cloud Services: Networking &amp; Web Services.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect y='2' width='32' height='8' rx='1' fill='%23F37021'/%3E%3Crect y='12' width='32' height='8' rx='1' fill='%23002677'/%3E%3Crect y='22' width='32' height='8' rx='1' fill='%23002677'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Lewati ke konten</a>
+
+  <header class="topbar">
+    <div class="wrap topbar-row">
+      <p class="brand"><span class="brand-mark" aria-hidden="true"></span>Net Web Lab</p>
+      <p class="course">Cloud Services (COMP6991031), Praktikum Pertemuan 3</p>
+      <p class="conn" id="conn" data-state="wait">Memeriksa koneksi</p>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="route wrap" aria-labelledby="route-title">
+      <div class="route-intro">
+        <h1 id="route-title">Jalur sebuah request</h1>
+        <div class="route-lede">
+          <p>Halaman ini meminta <code>/api/health</code>. Request itu diterima nginx, diteruskan ke API Node.js, lalu API bertanya ke PostgreSQL. Status tiap tier di bawah berasal dari jawaban tersebut.</p>
+          <p class="route-actions">
+            <button type="button" class="btn btn-quiet" id="recheck">Periksa ulang</button>
+            <span class="checked-at" id="checked-at" aria-live="polite"></span>
+          </p>
+        </div>
+      </div>
+
+      <div class="map" id="map">
+        <span class="packet" aria-hidden="true"></span>
+        <ol class="hops">
+          <li class="hop" id="hop-client" data-state="ok">
+            <span class="station" aria-hidden="true"></span>
+            <h2 class="hop-name">browser</h2>
+            <p class="hop-role">Anda</p>
+            <p class="hop-state" id="state-client">membuka halaman</p>
+            <dl class="facts">
+              <div><dt>Alamat</dt><dd id="f-origin">-</dd></div>
+              <div><dt>Protokol</dt><dd id="f-proto">-</dd></div>
+            </dl>
+          </li>
+          <li class="hop" id="hop-web" data-state="wait">
+            <span class="link" aria-hidden="true"><span class="link-net">port dipublish</span><span class="link-port" id="link-web-port">host → 80</span></span>
+            <span class="station" aria-hidden="true"></span>
+            <h2 class="hop-name">web</h2>
+            <p class="hop-role">nginx, reverse proxy</p>
+            <p class="hop-state" id="state-web">memeriksa</p>
+            <dl class="facts">
+              <div><dt>Server</dt><dd id="f-web-server">-</dd></div>
+              <div><dt>Meneruskan</dt><dd><code>/api/</code> ke <code>api:3000</code></dd></div>
+            </dl>
+          </li>
+          <li class="hop" id="hop-api" data-state="wait">
+            <span class="link" aria-hidden="true"><span class="link-net">jaringan app</span><span class="link-port">port 3000</span></span>
+            <span class="station" aria-hidden="true"></span>
+            <h2 class="hop-name">api</h2>
+            <p class="hop-role">Node.js, tanpa framework</p>
+            <p class="hop-state" id="state-api">memeriksa</p>
+            <dl class="facts">
+              <div><dt>Container</dt><dd id="f-api-host">-</dd></div>
+              <div><dt>Waktu jawab</dt><dd id="f-api-ms">-</dd></div>
+            </dl>
+          </li>
+          <li class="hop" id="hop-db" data-state="wait">
+            <span class="link" aria-hidden="true"><span class="link-net">jaringan data</span><span class="link-port">port 5432</span></span>
+            <span class="station" aria-hidden="true"></span>
+            <h2 class="hop-name">db</h2>
+            <p class="hop-role">PostgreSQL</p>
+            <p class="hop-state" id="state-db">memeriksa</p>
+            <dl class="facts">
+              <div><dt>Versi</dt><dd id="f-db-version">-</dd></div>
+              <div><dt>Tabel notes</dt><dd id="f-db-notes">-</dd></div>
+            </dl>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <div class="panels wrap">
+      <section class="panel" aria-labelledby="notes-title">
+        <h2 id="notes-title">Catatan</h2>
+        <p class="panel-intro">Tersimpan di PostgreSQL (tabel <code>notes</code>). Form ini mengirim <code>POST /api/notes</code>, jadi datanya melewati ketiga tier.</p>
+
+        <form class="note-form" id="note-form" autocomplete="off">
+          <label class="field-label" for="note-text">Tulis catatan</label>
+          <div class="note-row">
+            <input id="note-text" name="text" type="text" maxlength="280" required placeholder="Misalnya: halo dari browser">
+            <button type="submit" class="btn btn-primary" id="note-submit">Simpan catatan</button>
+          </div>
+          <p class="note-meta"><span id="note-count">0/280</span><span class="note-status" id="note-status" aria-live="polite"></span></p>
+        </form>
+
+        <ol class="notes" id="notes" aria-live="polite"></ol>
+        <p class="notes-empty" id="notes-empty" hidden>Belum ada catatan. Tulis catatan pertama di form di atas.</p>
+        <p class="cmd">Dari toolbox: <code>curl -s http://web/api/notes | jq '.notes[].text'</code></p>
+      </section>
+
+      <section class="panel" aria-labelledby="whoami-title">
+        <h2 id="whoami-title">Dilihat dari server</h2>
+        <p class="panel-intro">Yang diterima API tentang request Anda (<code>GET /api/whoami</code>).</p>
+
+        <table class="whoami">
+          <tbody>
+            <tr><th scope="row">Hostname api</th><td id="w-host">-</td></tr>
+            <tr><th scope="row">IP container api</th><td id="w-ips">-</td></tr>
+            <tr class="mark"><th scope="row">Koneksi TCP dari</th><td id="w-remote">-</td></tr>
+            <tr class="mark"><th scope="row">X-Forwarded-For</th><td id="w-xff">-</td></tr>
+            <tr><th scope="row">X-Real-IP</th><td id="w-xrip">-</td></tr>
+            <tr><th scope="row">X-Forwarded-Proto</th><td id="w-proto">-</td></tr>
+            <tr><th scope="row">Host</th><td id="w-hosthdr">-</td></tr>
+            <tr><th scope="row">User-Agent</th><td id="w-ua">-</td></tr>
+          </tbody>
+        </table>
+        <p class="explain" id="w-explain">API tidak pernah berbicara langsung dengan browser Anda. Koneksi TCP yang diterimanya datang dari nginx, sedangkan alamat klien diteruskan nginx lewat header X-Forwarded-For dan X-Real-IP.</p>
+        <p class="cmd">Bandingkan tanpa nginx: <code>curl -s http://api:3000/api/whoami | jq</code></p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-row">
+      <p id="student-line">Memuat data mahasiswa</p>
+      <p class="footer-meta">Net Web Lab, Praktikum Pertemuan 3 Cloud Services, BINUS @Bandung</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>

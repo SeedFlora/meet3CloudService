@@ -1,0 +1,22 @@
+# Sertifikat dan private key hasil scripts/make-cert.sh: JANGAN di-commit.
+# (GitHub Actions membuat sertifikatnya sendiri saat menguji tantangan.)
+web/certs/*
+!web/certs/.gitkeep
+*.key
+*.pem
+
+# Rahasia dan file lokal
+.env
+.env.*
+
+# Dependency Node.js (diinstal di dalam image api, bukan di repo)
+node_modules/
+
+# File hasil latihan (wget, curl -o, rekaman output)
+*.bin
+tmp/
+evidence/tmp/
+
+# Sistem operasi / editor
+.DS_Store
+Thumbs.db

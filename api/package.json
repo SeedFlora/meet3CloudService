@@ -1,0 +1,17 @@
+{
+  "name": "netlab-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API Net Web Lab (Praktikum Pertemuan 3): Node.js tanpa framework + driver pg",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^8.23.0"
+  }
+}

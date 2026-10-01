@@ -1,0 +1,8 @@
+# Dimuat oleh shell interaktif di toolbox (docker compose exec toolbox bash).
+PS1='\[\e[1;33m\]toolbox\[\e[0m\]:\[\e[1;36m\]\w\[\e[0m\]# '
+alias ll='ls -alF'
+alias ports='ss -tulpn'
+export LESS=-R
+
+# Ringkasan perintah praktikum, tampil setiap kali shell toolbox dibuka.
+[ -r /etc/netlab/motd ] && cat /etc/netlab/motd

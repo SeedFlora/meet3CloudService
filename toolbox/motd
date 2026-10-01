@@ -1,0 +1,17 @@
+
+ ---------------------------------------------------------------------------
+  Net Web Lab: toolbox (Ubuntu 24.04)                  Praktikum Pertemuan 3
+ ---------------------------------------------------------------------------
+  Anda berada DI DALAM jaringan Docker (edge, app, data), folder /lab = repo.
+  Nama service : web  api  db      DNS internal Docker: 127.0.0.11
+  Host Docker  : host.docker.internal  (pandangan "dari luar" / dari host)
+
+  DNS        dig web      dig +short api db      nslookup binus.ac.id
+  Koneksi    ping -c 4 api      traceroute -T -p 443 -n github.com
+  HTTP       curl -i http://web/api/health      wget -S --spider http://web/
+  Port       nmap web api db      nc -zv db 5432
+  TLS        openssl s_client -connect github.com:443 -brief </dev/null
+  Tantangan  bash scripts/make-cert.sh      bash scripts/healthcheck.sh
+
+  Keluar dari toolbox: exit   (container tetap berjalan)
+ ---------------------------------------------------------------------------

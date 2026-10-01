@@ -1,0 +1,304 @@
+/* ============================================================
+   Net Web Lab — style
+   Warna mata kuliah: navy #002677, oranye #F37021.
+   Font memakai font sistem: halaman ini sengaja tidak memuat apa pun
+   dari luar, sehingga tab Network di DevTools hanya berisi request
+   ke lab (HTML, CSS, JS, /api/..., /student.json).
+   ============================================================ */
+
+:root {
+  --navy: #002677;
+  --navy-deep: #001b55;
+  --navy-wash: #e8edf8;
+  --orange: #f37021;
+  --orange-ink: #a9480c;
+  --orange-wash: #fef0e6;
+  --ink: #1b2440;
+  --slate: #56627f;
+  --paper: #f3f5fa;
+  --panel: #ffffff;
+  --rule: #d8deea;
+  --ok: #16804a;
+  --ok-wash: #e3f3ea;
+  --bad: #c0392b;
+  --bad-wash: #fbe8e5;
+  --wait: #8a94ab;
+
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  --radius: 6px;
+  --line-y: 58px;          /* posisi vertikal garis rute */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+h1, h2, p, dl, dd, ol { margin: 0; }
+ol { padding: 0; list-style: none; }
+code { font-family: var(--mono); font-size: 0.88em; }
+button, input { font: inherit; color: inherit; }
+
+.wrap { width: min(1200px, 100% - 3rem); margin-inline: auto; }
+
+.skip {
+  position: absolute; left: 1rem; top: -3rem;
+  background: var(--panel); color: var(--navy);
+  padding: 0.5rem 0.75rem; border-radius: var(--radius); z-index: 10;
+}
+.skip:focus { top: 0.75rem; }
+
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+/* ---------- Top bar ---------- */
+
+.topbar { background: var(--navy); color: #fff; }
+.topbar-row {
+  display: flex; align-items: center; gap: 1.5rem;
+  min-height: 60px;
+}
+.brand {
+  display: flex; align-items: center; gap: 0.6rem;
+  font-weight: 700; font-size: 1.15rem; letter-spacing: 0.01em;
+}
+.brand-mark {
+  width: 18px; height: 18px;
+  background:
+    linear-gradient(var(--orange) 0 5px, transparent 5px 6.5px,
+                    #fff 6.5px 11.5px, transparent 11.5px 13px,
+                    #fff 13px 18px);
+  border-radius: 2px;
+}
+.course { color: #c6d0ea; font-size: 0.95rem; }
+.conn {
+  margin-left: auto;
+  font-size: 0.9rem; font-weight: 600;
+  padding: 0.3rem 0.8rem; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12); color: #fff;
+}
+.conn[data-state="plain"] { background: var(--orange); color: #fff; }
+.conn[data-state="tls"] { background: #2fa36b; color: #fff; }
+
+/* ---------- Intro ---------- */
+
+.route { padding-top: 2.25rem; }
+.route-intro {
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 2rem; align-items: start;
+}
+h1 {
+  font-size: 2.2rem; line-height: 1.15; font-weight: 700;
+  color: var(--navy); letter-spacing: -0.01em;
+}
+.route-lede { color: var(--slate); max-width: 68ch; }
+.route-actions { display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem; }
+.checked-at { font-size: 0.875rem; color: var(--slate); }
+
+.btn {
+  border: 0; border-radius: var(--radius); cursor: pointer;
+  padding: 0.55rem 1rem; font-weight: 600;
+}
+.btn-quiet { background: var(--panel); color: var(--navy); box-shadow: inset 0 0 0 1px var(--rule); }
+.btn-quiet:hover { box-shadow: inset 0 0 0 1px var(--navy); }
+.btn-primary { background: var(--orange); color: #fff; }
+.btn-primary:hover { background: #d95f15; }
+.btn:disabled { opacity: 0.6; cursor: progress; }
+
+/* ---------- Peta rute (elemen utama halaman) ---------- */
+
+.map {
+  position: relative;
+  margin-top: 2rem;
+  padding: 0 0 1.75rem;
+  border-bottom: 1px solid var(--rule);
+}
+/* Garis rute: dari stasiun pertama sampai terakhir (pusat kolom 1 dan 4). */
+.map::before {
+  content: "";
+  position: absolute; left: 12.5%; right: 12.5%; top: var(--line-y);
+  height: 4px; margin-top: -2px;
+  background: var(--navy); border-radius: 2px;
+}
+.hops {
+  position: relative;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.hop {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: calc(var(--line-y) + 22px) 1rem 0;
+}
+.station {
+  position: absolute; top: var(--line-y); left: 50%;
+  width: 26px; height: 26px; margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 5px solid var(--wait);
+  z-index: 1;
+}
+#hop-client .station { background: var(--navy); border-color: var(--navy); }
+.hop[data-state="ok"] .station { border-color: var(--ok); }
+.hop[data-state="bad"] .station { border-color: var(--bad); background: var(--bad-wash); }
+
+/* Label ruas: nama jaringan di atas garis, port di bawah garis. */
+.link {
+  position: absolute; top: 0; left: -50%; width: 100%; height: calc(var(--line-y) + 30px);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  pointer-events: none;
+}
+.link-net {
+  margin-top: calc(var(--line-y) - 34px);
+  font-size: 0.85rem; font-weight: 600; color: var(--navy);
+}
+.link-port {
+  font-family: var(--mono); font-size: 0.82rem; color: var(--slate);
+  background: var(--paper); padding: 0 0.4rem;
+}
+
+.hop-name { font-size: 1.45rem; line-height: 1.2; font-weight: 700; color: var(--navy); }
+.hop-role { color: var(--slate); font-size: 0.95rem; }
+.hop-state {
+  margin-top: 0.5rem;
+  font-size: 0.875rem; font-weight: 600;
+  padding: 0.1rem 0.65rem; border-radius: 999px;
+  background: var(--navy-wash); color: var(--slate);
+}
+.hop[data-state="ok"] .hop-state { background: var(--ok-wash); color: var(--ok); }
+.hop[data-state="bad"] .hop-state { background: var(--bad-wash); color: var(--bad); }
+#hop-client .hop-state { background: var(--navy-wash); color: var(--navy); }
+
+.facts {
+  margin-top: 0.85rem;
+  display: grid; gap: 0.2rem;
+  font-size: 0.9rem; text-align: left;
+}
+.facts div { display: grid; grid-template-columns: 7.2rem minmax(0, 1fr); gap: 0.5rem; }
+.facts dt { color: var(--slate); }
+.facts dd { font-family: var(--mono); font-size: 0.85rem; overflow-wrap: anywhere; }
+
+/* Paket: satu titik oranye yang berjalan di rute setiap kali pemeriksaan selesai. */
+.packet {
+  position: absolute; top: var(--line-y); left: 12.5%;
+  width: 14px; height: 14px; margin: -7px 0 0 -7px;
+  border-radius: 50%; background: var(--orange);
+  box-shadow: 0 0 0 4px rgba(243, 112, 33, 0.25);
+  opacity: 0; z-index: 2;
+}
+.map.travel .packet { animation: travel 1.5s cubic-bezier(0.45, 0, 0.25, 1) forwards; }
+@keyframes travel {
+  0%   { left: 12.5%; opacity: 1; }
+  85%  { left: var(--stop, 87.5%); opacity: 1; }
+  100% { left: var(--stop, 87.5%); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map.travel .packet { animation: none; }
+}
+
+/* ---------- Panel ---------- */
+
+.panels {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 1.5rem; align-items: start;
+  padding: 1.75rem 0 2.5rem;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  padding: 1.4rem 1.5rem 1.25rem;
+}
+.panel h2 { font-size: 1.3rem; color: var(--navy); }
+.panel-intro { margin-top: 0.3rem; color: var(--slate); font-size: 0.95rem; }
+
+.note-form { margin-top: 1.1rem; }
+.field-label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.35rem; }
+.note-row { display: flex; gap: 0.6rem; }
+.note-row input {
+  flex: 1; min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: #fff;
+}
+.note-row input:focus-visible { outline-offset: 0; }
+.note-meta {
+  display: flex; justify-content: space-between; gap: 1rem;
+  margin-top: 0.35rem; font-size: 0.85rem; color: var(--slate);
+}
+.note-status[data-kind="ok"] { color: var(--ok); font-weight: 600; }
+.note-status[data-kind="bad"] { color: var(--bad); font-weight: 600; }
+
+.notes { margin-top: 0.9rem; border-top: 1px solid var(--rule); }
+.notes li {
+  display: grid; grid-template-columns: 3.2rem minmax(0, 1fr) auto;
+  gap: 0.75rem; align-items: baseline;
+  padding: 0.6rem 0; border-bottom: 1px solid var(--rule);
+}
+.notes .n-id { font-family: var(--mono); font-size: 0.85rem; color: var(--slate); }
+.notes .n-text { overflow-wrap: anywhere; }
+.notes .n-time { font-size: 0.82rem; color: var(--slate); white-space: nowrap; }
+.notes li.fresh { background: var(--orange-wash); }
+.notes-empty { margin-top: 0.9rem; color: var(--slate); }
+
+.whoami { width: 100%; margin-top: 1rem; border-collapse: collapse; font-size: 0.92rem; }
+.whoami th, .whoami td {
+  text-align: left; vertical-align: top;
+  padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--rule);
+}
+.whoami th { width: 38%; font-weight: 600; color: var(--slate); }
+.whoami td { font-family: var(--mono); font-size: 0.85rem; overflow-wrap: anywhere; }
+.whoami td small { font-family: var(--font); color: var(--slate); font-size: 0.8rem; }
+.whoami tr.mark th, .whoami tr.mark td { background: var(--orange-wash); }
+.whoami tr.mark th { box-shadow: inset 3px 0 0 var(--orange); }
+.explain { margin-top: 0.85rem; font-size: 0.92rem; }
+
+.cmd {
+  margin-top: 1rem; padding: 0.55rem 0.75rem;
+  background: var(--paper); border-radius: var(--radius);
+  font-size: 0.85rem; color: var(--slate);
+}
+.cmd code { color: var(--ink); }
+
+/* ---------- Footer ---------- */
+
+.site-footer { border-top: 1px solid var(--rule); background: var(--panel); }
+.footer-row {
+  display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  padding: 1rem 0; font-size: 0.9rem; color: var(--slate);
+}
+#student-line strong { color: var(--ink); }
+.student-warning { color: var(--orange-ink); font-weight: 600; }
+
+/* ---------- Layar sempit ---------- */
+
+@media (max-width: 900px) {
+  .topbar-row { flex-wrap: wrap; gap: 0.25rem 1rem; padding: 0.6rem 0; }
+  .course { order: 3; width: 100%; font-size: 0.85rem; }
+  .route-intro, .panels { grid-template-columns: minmax(0, 1fr); }
+  h1 { font-size: 1.8rem; }
+
+  /* Rute menjadi vertikal: garis di kiri, stasiun berurutan ke bawah. */
+  .map::before { left: 13px; right: auto; top: 12px; bottom: 2.5rem; width: 4px; height: auto; margin: 0; }
+  .hops { grid-template-columns: minmax(0, 1fr); gap: 1.4rem; }
+  .hop { align-items: flex-start; text-align: left; padding: 0 0 0 3rem; }
+  .station { top: 12px; left: 15px; }
+  .link { position: static; height: auto; flex-direction: row; gap: 0.75rem; margin-bottom: 0.3rem; }
+  .link-net { margin-top: 0; }
+  .packet { display: none; }
+}
+
+@media (max-width: 600px) {
+  .wrap { width: min(1200px, 100% - 2rem); }
+  .note-row { flex-direction: column; }
+  .notes li { grid-template-columns: 2.6rem minmax(0, 1fr); }
+  .notes .n-time { grid-column: 2; }
+  .whoami th { width: 42%; }
+}

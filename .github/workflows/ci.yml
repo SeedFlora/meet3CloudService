@@ -1,0 +1,69 @@
+# CI Net Web Lab. Hasilnya terlihat di tab Actions:
+#   student    student.json terisi dengan benar          -> hijau setelah Anda mengisi student.json
+#   stack      stack berjalan dan smoke test lolos        -> hijau sejak awal
+#   challenge  tantangan desain (port, HTTPS, segmentasi) -> SENGAJA MERAH sampai tantangan selesai
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Di runner GitHub, pull image publik dari Docker Hub tidak dikenai rate limit,
+  # sedangkan pull anonim ke ECR Public dari IP runner yang dipakai bersama bisa
+  # ditolak (toomanyrequests). Image-nya identik (Docker Official Images).
+  LAB_REGISTRY: docker.io/library
+
+jobs:
+  student:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Periksa student.json
+        run: bash tests/test_student.sh
+
+  stack:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      # Sertifikat tidak di-commit (.gitignore). Setelah tantangan selesai,
+      # web/nginx/https.conf membutuhkannya, jadi CI selalu membuatnya.
+      - name: Buat sertifikat self-signed (web/certs)
+        run: bash scripts/make-cert.sh
+      - name: Nyalakan stack
+        run: docker compose up -d --build --wait --wait-timeout 180
+      - name: Smoke test
+        run: bash tests/smoke.sh
+      - name: Status dan log container (bila gagal)
+        if: failure()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail 80
+      - name: Matikan stack
+        if: always()
+        run: docker compose down -v
+
+  challenge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Buat sertifikat self-signed (web/certs)
+        run: bash scripts/make-cert.sh
+      - name: Nyalakan stack
+        run: docker compose up -d --build --wait --wait-timeout 180
+      - name: Tantangan desain
+        run: bash tests/challenge.sh
+      - name: Status dan log container (bila gagal)
+        if: failure()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color --tail 80
+      - name: Matikan stack
+        if: always()
+        run: docker compose down -v

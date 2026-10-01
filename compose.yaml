@@ -1,0 +1,145 @@
+# =============================================================================
+# Net Web Lab: Praktikum Pertemuan 3 (Networking & Web Services)
+#
+#   web      nginx: menyajikan frontend dan meneruskan /api/ ke api (reverse proxy)
+#   api      Node.js tanpa framework + driver pg
+#   db       PostgreSQL
+#   toolbox  Ubuntu berisi dig, ping, traceroute, curl, wget, nmap, nc, openssl
+#
+# Perintah dasar (jalankan dari folder repo):
+#   docker compose up -d --build --wait     menyalakan semua service
+#   docker compose ps                       status + kolom PORTS
+#   docker compose exec toolbox bash        masuk ke toolbox
+#   docker compose logs -f api              melihat log (Ctrl+C untuk berhenti)
+#   docker compose down                     mematikan (tambah -v untuk menghapus data db)
+#
+# PERHATIAN: desain di file ini SENGAJA belum aman. Di tantangan desain Anda
+# menemukan masalahnya dengan dig, curl, nmap, nc, dan openssl, lalu memperbaikinya.
+# =============================================================================
+
+name: netlab
+
+# Image diambil dari Amazon ECR Public (public.ecr.aws/docker/library/...), mirror
+# resmi Docker Official Images; isinya sama dengan nginx, node, postgres, ubuntu di
+# Docker Hub. Alasannya: satu kelas biasanya keluar ke Internet lewat satu alamat IP
+# (NAT), sedangkan Docker Hub membatasi jumlah pull anonim per IP.
+# ${LAB_REGISTRY:-...} artinya: pakai isi variabel LAB_REGISTRY bila ada, bila tidak
+# pakai ECR Public. GitHub Actions memakai LAB_REGISTRY=docker.io/library (Docker Hub).
+
+services:
+  web:
+    image: ${LAB_REGISTRY:-public.ecr.aws/docker/library}/nginx:1.30-alpine
+    ports:
+      - "8080:80"                 # host:container -> http://localhost:8080
+    volumes:
+      - ./web/html:/usr/share/nginx/html:ro
+      - ./web/nginx:/etc/nginx/conf.d:ro
+      - ./web/certs:/etc/nginx/certs:ro
+      - ./:/srv/lab:ro            # dari folder ini nginx hanya menyajikan /student.json
+    networks:
+      - edge
+      - app
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+      start_interval: 1s
+
+  api:
+    build:
+      context: ./api
+      args:
+        LAB_REGISTRY: ${LAB_REGISTRY:-public.ecr.aws/docker/library}
+    environment:
+      PORT: "3000"
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: lab
+      PGPASSWORD: labpass         # password dummy khusus lab, jangan dipakai di sistem sungguhan
+      PGDATABASE: netlab
+    ports:
+      - "3000:3000"
+    networks:
+      - app
+      - data
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+      start_interval: 1s
+
+  db:
+    image: ${LAB_REGISTRY:-public.ecr.aws/docker/library}/postgres:17-alpine
+    environment:
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: labpass  # password dummy khusus lab, jangan dipakai di sistem sungguhan
+      POSTGRES_DB: netlab
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    networks:
+      - data
+    healthcheck:
+      # -h 127.0.0.1: baru dianggap siap setelah PostgreSQL menerima koneksi TCP
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "lab", "-d", "netlab"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+      start_interval: 1s
+
+  toolbox:
+    build:
+      context: ./toolbox
+      args:
+        LAB_REGISTRY: ${LAB_REGISTRY:-public.ecr.aws/docker/library}
+    hostname: toolbox
+    init: true                    # sleep infinity berhenti rapi saat docker compose down
+    command: ["sleep", "infinity"]
+    working_dir: /lab
+    volumes:
+      - ./:/lab                   # seluruh repo terlihat di /lab
+    networks:
+      - edge
+      - app
+      - data
+    extra_hosts:
+      # host.docker.internal = mesin host Docker, untuk memindai port yang dipublish
+      - "host.docker.internal:host-gateway"
+
+# Tiga jaringan dengan subnet tetap supaya alamat IP mudah dikenali dan nmap cepat.
+#   edge  web, toolbox         app   web, api, toolbox         data  api, db, toolbox
+#
+# Setelah mengubah bagian networks: ini (subnet, internal, dan sebagainya), jalankan
+#   docker compose up -d --force-recreate --wait
+# Compose membuat ulang jaringannya; tanpa --force-recreate, container yang hanya
+# dinyalakan ulang bisa kehilangan nama service-nya di jaringan baru (nama "db" tidak
+# ter-resolve, api menjadi unhealthy).
+networks:
+  edge:
+    ipam:
+      config:
+        - subnet: 172.28.10.0/24
+  app:
+    ipam:
+      config:
+        - subnet: 172.28.20.0/24
+  data:
+    ipam:
+      config:
+        - subnet: 172.28.30.0/24
+
+volumes:
+  dbdata:

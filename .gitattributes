@@ -1,0 +1,20 @@
+# Semua file teks memakai line ending LF, juga saat repo di-clone di Windows.
+# Skrip bash, Dockerfile, konfigurasi nginx, YAML, dan SQL dijalankan di Linux
+# (container / Codespaces); CRLF membuatnya gagal dengan error yang membingungkan.
+* text=auto eol=lf
+
+*.sh         text eol=lf
+*.conf       text eol=lf
+*.example    text eol=lf
+*.yml        text eol=lf
+*.yaml       text eol=lf
+*.sql        text eol=lf
+*.js         text eol=lf
+*.json       text eol=lf
+Dockerfile   text eol=lf
+bashrc       text eol=lf
+motd         text eol=lf
+
+*.png  binary
+*.jpg  binary
+*.ico  binary
