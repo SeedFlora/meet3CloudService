@@ -38,7 +38,7 @@ Contoh berikut diambil **langsung dari GitHub Codespaces** saat empat service La
 
 ![Codespaces live: empat service Docker dan smoke test berhasil](screenshots/lab03_codespaces_docker_live.jpg)
 
-*Perintah live: `docker compose ps --format '{{.Service}} {{.State}} {{.Health}}'` dan `bash tests/smoke.sh`. Yang pertama menanyakan keadaan empat service pada Docker Engine Codespaces; yang kedua mengirim request DNS, HTTP, POST/GET catatan, dan akses host. Baca baris akhir `smoke: 12 PASS, 0 FAIL`; nama Codespace dan waktu bisa berbeda.*
+*Perintah live: `docker compose ps --format '{{.Service}} {{.State}} {{.Health}}' && bash tests/smoke.sh | tail -n 4`. Compose menanyakan keadaan empat service; `&&` menjalankan smoke hanya jika perintah pertama berhasil. Smoke menguji DNS, HTTP, POST/GET catatan, dan akses host; `tail -n 4` hanya menampilkan empat baris akhirnya. Baca `smoke: 12 PASS, 0 FAIL`; jalankan `bash tests/smoke.sh` tanpa `tail` untuk melihat seluruh pemeriksaan.*
 
 ![Codespaces live: web port 8080 menampilkan empat tier berjalan](screenshots/lab03_codespaces_web_live.jpg)
 
@@ -65,7 +65,7 @@ traceroute -m 5 web
 
 ![Codespaces live: DNS, ping, dan traceroute dari toolbox](screenshots/lab03_codespaces_network_live.jpg)
 
-*Perintah live: `docker compose exec toolbox bash`, lalu `dig +short web`, `nslookup api`, `ping -c 1 web`, `traceroute -m 3 web`. Toolbox menjalankan alat di jaringan yang sama dengan service lab. Baca IP internal untuk web/API, `0% packet loss` pada ping, dan hop menuju web pada traceroute.*
+*Perintah live di gambar memakai `docker compose exec -T toolbox bash -lc '...'` untuk menjalankan beberapa perintah sekaligus di toolbox; `-T` mematikan terminal interaktif, `bash -lc` menjalankan string perintah, `;` memisahkan perintah, dan `| tail -n` meringkas bagian output. Di dalamnya `dig +short web` dan `nslookup api` meminta IP internal, `ping -c 1 web` menguji ICMP, serta `traceroute -m 3 web` melihat hop. Baca IP web/API, `0% packet loss`, dan hop menuju web. Untuk mencoba satu per satu, masuk dengan `docker compose exec toolbox bash` seperti blok perintah di atas.*
 
 ## 3. Baca request dan status HTTP
 
@@ -118,7 +118,7 @@ bash tests/challenge.sh
 
 ![Codespaces live: curl, wget, nmap, netcat, dan versi OpenSSL pada starter](screenshots/lab03_codespaces_http_ports_live.jpg)
 
-*Perintah live di toolbox: `curl` mengambil kode health, `wget -qO-` membaca JSON, `nmap -sT -Pn` memeriksa port host, `nc -vz api 3000` mencoba satu koneksi TCP, dan `openssl version` memastikan alat TLS tersedia. Baca `HTTP 200`, `db: up`, tiga port `open`, serta `succeeded` untuk koneksi ke API. Jalankan perintah Anda sendiri; nilai waktu/IP dapat berbeda.*
+*Perintah live di gambar dibungkus `docker compose exec -T toolbox bash -lc '...'`; `;` menjalankan alat berurutan dan `| tail -n` membatasi baris nmap yang ditampilkan. `curl` mengambil kode health, `wget -qO-` membaca JSON, `nmap -sT -Pn` mencoba koneksi ke port host, `nc -vz api 3000` mencoba satu socket TCP, dan `openssl version` memeriksa alat TLS. Baca `HTTP 200`, `db: up`, tiga port `open`, serta `succeeded` untuk koneksi API. Jalankan perintah satu per satu dari toolbox agar output lengkap terlihat.*
 
 Gambar berikut berasal dari materi sumber dan menunjukkan kegagalan awal yang memang perlu diselesaikan mahasiswa.
 

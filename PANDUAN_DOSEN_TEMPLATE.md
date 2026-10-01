@@ -60,7 +60,7 @@ Gambar berikut adalah hasil **uji live di GitHub Codespaces**: empat service ber
 
 ![Codespaces live: terminal Compose dan smoke test](screenshots/lab03_codespaces_docker_live.jpg)
 
-*Perintah live: `docker compose ps --format '{{.Service}} {{.State}} {{.Health}}'` lalu `bash tests/smoke.sh`. Perintah pertama merangkum empat container; smoke meminta DNS, halaman, API, POST/GET DB, dan akses host. Tunjuk `smoke: 12 PASS, 0 FAIL` di terminal; mahasiswa wajib menunjukkan output repo sendiri.*
+*Perintah live: `docker compose ps --format '{{.Service}} {{.State}} {{.Health}}' && bash tests/smoke.sh | tail -n 4`. Compose merangkum empat container; `&&` menjalankan smoke hanya setelah Compose berhasil. Smoke meminta DNS, halaman, API, POST/GET DB, dan akses host; `tail -n 4` menyisakan empat baris terakhir. Tunjuk `smoke: 12 PASS, 0 FAIL`; minta mahasiswa menjalankan smoke tanpa `tail` untuk bukti lengkap.*
 
 ### 2. DNS dan konektivitas internal
 
@@ -81,7 +81,7 @@ Minta mahasiswa menyebut **nama service, IP internal, jaringan, dan posisi termi
 
 ![Codespaces live: DNS, ping, dan traceroute dari toolbox](screenshots/lab03_codespaces_network_live.jpg)
 
-*Perintah live: `docker compose exec toolbox bash`, kemudian `dig +short web`, `nslookup api`, `ping -c 1 web`, dan `traceroute -m 3 web`. Jelaskan bahwa alat berjalan di jaringan container; tunjuk IP web/API, `0% packet loss`, dan hop menuju web.*
+*Perintah live di gambar: `docker compose exec -T toolbox bash -lc '...'`. `-T` mematikan terminal interaktif, `bash -lc` menjalankan beberapa perintah di toolbox, `;` memisahkan perintah, dan `| tail -n` merangkum output. Di dalamnya `dig +short web`/`nslookup api` meminta IP internal, `ping -c 1 web` menguji ICMP, dan `traceroute -m 3 web` melihat hop. Tunjuk IP web/API, `0% packet loss`, dan hop menuju web; mahasiswa dapat mencoba perintah satu per satu di shell toolbox.*
 
 ### 3. HTTP dan reverse proxy
 
@@ -120,7 +120,7 @@ Challenge starter sengaja gagal. Contoh paket uji awal menunjukkan **1 PASS, 11 
 
 ![Codespaces live: curl, wget, nmap, nc, dan OpenSSL dari toolbox](screenshots/lab03_codespaces_http_ports_live.jpg)
 
-*Perintah live: `curl` mengambil status health, `wget -qO-` mengambil JSON, `nmap` membaca port host, `nc -vz api 3000` menguji satu socket, dan `openssl version` memeriksa alat TLS. Tunjuk `HTTP 200`, `db: up`, port 3000/5432/8080 `open`, dan koneksi API `succeeded` sebagai dasar perubahan desain.*
+*Perintah live dibungkus `docker compose exec -T toolbox bash -lc '...'`; `;` menjalankan alat berurutan dan `| tail -n` membatasi output nmap yang tampak. `curl` mengambil status health, `wget -qO-` mengambil JSON, `nmap` mencoba port host, `nc -vz api 3000` menguji satu socket, dan `openssl version` memeriksa alat TLS. Tunjuk `HTTP 200`, `db: up`, port 3000/5432/8080 `open`, dan koneksi API `succeeded` sebagai dasar perubahan desain.*
 
 ![Contoh challenge starter yang memang belum lulus](screenshots/lab03_challenge_awal.png)
 
