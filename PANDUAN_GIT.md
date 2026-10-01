@@ -4,10 +4,14 @@ Repo ini adalah satu lab mandiri. Jalankan semua perintah dari root, tempat `com
 
 ## Mahasiswa: buat repo dan Codespace
 
-1. Buka URL template dari dosen. Pilih **Use this template → Create a new repository**. Buat repo milik sendiri; visibilitas sesuai arahan kelas.
+1. Buka [SeedFlora/meet3CloudService](https://github.com/SeedFlora/meet3CloudService) setelah login GitHub. Pastikan ada label **Public template**, lalu pilih **Use this template → Create a new repository**. Buat repo milik sendiri; visibilitas sesuai arahan kelas.
 2. Dari repo sendiri pilih **Code → Codespaces → Create codespace on main**. Di Codespace, folder kerja yang dibuka adalah root repo ini.
 3. Isi `student.json` dengan nama, kelas, username GitHub. Jangan tulis NIM. Jalankan `bash tests/test_student.sh`.
 4. Kerjakan [modul bergambar](MODUL_MAHASISWA.md), termasuk screenshot hasil sendiri di `hasil/bukti/lab03/` dan laporan `hasil/lab03.md`.
+
+![Halaman repo kelas dengan label Public template dan tombol Code](screenshots/lab03_github_template.png)
+
+*Langkah UI pada gambar: buka repo kelas dan pastikan label **Public template** serta branch `main` terlihat. Setelah login, klik **Use this template → Create a new repository** untuk menyalin starter ke repo Anda; jangan bekerja langsung di repo kelas. Di repo pribadi klik **Code → Codespaces → Create codespace on main**. Saat editor terbuka, baca root file `compose.yaml` dan lanjutkan perintah pada modul mahasiswa.*
 
 ## Commit dan push
 

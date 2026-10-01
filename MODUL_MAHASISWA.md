@@ -26,15 +26,23 @@ bash tests/smoke.sh
 bash tests/test_student.sh
 ```
 
-`test_student.sh` akan merah jika `student.json` masih contoh. Isi file tersebut lalu ulangi tes. Buka `http://localhost:8080`; pada Codespaces gunakan port 8080 di panel **Ports**. Gambar berikut diambil dari starter yang dijalankan lokal; alamat container dan waktu pada layar Anda akan berbeda.
-
-![Halaman Net Web Lab yang disajikan nginx lokal pada port 8080](screenshots/lab03_web_lokal.png)
+`test_student.sh` akan merah jika `student.json` masih contoh. Isi file tersebut lalu ulangi tes. Buka `http://localhost:8080`; pada Codespaces gunakan port 8080 di panel **Ports**. Gambar terminal lokal dan Codespaces di bawah menunjukkan hasil acuan; alamat container dan waktu pada layar Anda akan berbeda.
 
 **Checkpoint 1:** `web`, `api`, `db` sehat; `toolbox` berjalan; `smoke.sh` berakhir **12 PASS, 0 FAIL** pada paket yang diuji. Halaman menggambar alur browser → web → api → db. Catat kolom `PORTS` dari `docker compose ps`.
 
 ![Docker Compose menampilkan empat service dan port host awal](screenshots/lab03_docker_ps_lokal.png)
 
-*Pada tampilan awal, `web` sehat di host 8080; `api` dan `db` juga mem-publish port 3000 dan 5432. Kolom pada gambar diringkas agar mudah dibaca; jalankan `docker compose ps` untuk melihat seluruh kolom di komputer Anda.*
+*Perintah: `docker compose ps`. Compose membaca keadaan container, healthcheck, dan port yang dipublish. Baca `STATUS`: web/API/DB harus healthy, toolbox running. Baca `PORTS`: starter memetakan web 8080, API 3000, DB 5432 ke host. Kolom gambar diringkas; jalankan perintah sendiri untuk detail lengkap.*
+
+Contoh berikut diambil **langsung dari GitHub Codespaces** saat empat service Lab 03 berjalan. Terminal memperlihatkan `docker compose ps` dan smoke **12 PASS, 0 FAIL**; web port 8080 menampilkan alur browser -> web -> API -> DB. Label `443 -> 80` pada diagram adalah port forwarding Codespaces (HTTPS di sisi browser menuju HTTP nginx). Tantangan TLS baru selesai setelah `web:443` aktif dan `curl --cacert` berhasil.
+
+![Codespaces live: empat service Docker dan smoke test berhasil](screenshots/lab03_codespaces_docker_live.jpg)
+
+*Perintah live: `docker compose ps --format '{{.Service}} {{.State}} {{.Health}}'` dan `bash tests/smoke.sh`. Yang pertama menanyakan keadaan empat service pada Docker Engine Codespaces; yang kedua mengirim request DNS, HTTP, POST/GET catatan, dan akses host. Baca baris akhir `smoke: 12 PASS, 0 FAIL`; nama Codespace dan waktu bisa berbeda.*
+
+![Codespaces live: web port 8080 menampilkan empat tier berjalan](screenshots/lab03_codespaces_web_live.jpg)
+
+*Langkah UI: di panel **Ports**, buka port 8080. Browser mengirim GET ke nginx; frontend meminta `/api/health`, nginx meneruskan ke API, dan API mengecek PostgreSQL. Baca empat status hijau dan label `443 -> 80`: HTTPS berasal dari URL forwarding Codespaces, sedangkan nginx starter masih HTTP. Untuk bukti TLS nginx pada checkpoint 5, uji `https://web` dari toolbox.*
 
 ## 2. Periksa DNS dan konektivitas dari toolbox
 
@@ -53,7 +61,11 @@ traceroute -m 5 web
 
 ![Hasil DNS dan ping dari toolbox ke nama service Compose](screenshots/lab03_dns_toolbox.png)
 
-*Bandingkan IP untuk `web`, `api`, dan `db`; IP tersebut milik jaringan container dan dapat berbeda saat stack dibuat ulang.*
+*Perintah: `dig web A`, `nslookup api`, `getent hosts db`, dan `ping -c 3 web` dari toolbox. Tiga perintah pertama meminta alamat internal dari DNS Compose; ping mengirim ICMP untuk memeriksa jalur ke web. Baca alamat `172.28.x.x` dan balasan/loss ping; IP bisa berubah saat stack dibuat ulang.*
+
+![Codespaces live: DNS, ping, dan traceroute dari toolbox](screenshots/lab03_codespaces_network_live.jpg)
+
+*Perintah live: `docker compose exec toolbox bash`, lalu `dig +short web`, `nslookup api`, `ping -c 1 web`, `traceroute -m 3 web`. Toolbox menjalankan alat di jaringan yang sama dengan service lab. Baca IP internal untuk web/API, `0% packet loss` pada ping, dan hop menuju web pada traceroute.*
 
 ## 3. Baca request dan status HTTP
 
@@ -72,7 +84,7 @@ wget -qO- http://web/api/health
 
 ![Respons HTTP 200 health dan 404 catatan yang tidak ditemukan melalui nginx](screenshots/lab03_http_toolbox.png)
 
-*Cari baris status pertama pada tiap respons dan perhatikan JSON `db: up` untuk health. Lakukan POST sendiri untuk membuktikan status 201.*
+*Perintah: `curl -i http://web/api/health` dan `curl -i http://web/api/notes/999999999`. `-i` menampilkan header serta body dari respons nginx -> API. Baca baris pertama: health `200` dengan JSON `db: up`; ID yang tidak ada `404`. Jalankan POST di atas untuk membuktikan `201` dan header `Location`.*
 
 Keluar dari toolbox dengan `exit`, lalu dari host jalankan `curl http://localhost:8080/api/whoami` dan `curl http://localhost:3000/api/whoami`. Di PowerShell gunakan `curl.exe`:
 
@@ -102,11 +114,17 @@ bash tests/challenge.sh
 
 ![Pemindaian port host awal dari toolbox menunjukkan 8080, 3000, dan 5432 terbuka](screenshots/lab03_port_awal.png)
 
-*Sebelum memperbaiki Compose, cocokkan hasil `nmap` dengan kolom `PORTS` pada gambar di langkah 1. Pindai hanya stack latihan milik Anda.*
+*Perintah: `nmap -sT -Pn -p 8080,3000,5432 host.docker.internal`. `-sT` mencoba koneksi TCP dari toolbox ke port host Docker; `-Pn` tidak mengandalkan ping. Baca `open` untuk 8080/3000/5432 pada starter dan cocokkan dengan `docker compose ps`. Pindai hanya stack milik Anda.*
+
+![Codespaces live: curl, wget, nmap, netcat, dan versi OpenSSL pada starter](screenshots/lab03_codespaces_http_ports_live.jpg)
+
+*Perintah live di toolbox: `curl` mengambil kode health, `wget -qO-` membaca JSON, `nmap -sT -Pn` memeriksa port host, `nc -vz api 3000` mencoba satu koneksi TCP, dan `openssl version` memastikan alat TLS tersedia. Baca `HTTP 200`, `db: up`, tiga port `open`, serta `succeeded` untuk koneksi ke API. Jalankan perintah Anda sendiri; nilai waktu/IP dapat berbeda.*
 
 Gambar berikut berasal dari materi sumber dan menunjukkan kegagalan awal yang memang perlu diselesaikan mahasiswa.
 
 ![Challenge pada starter Lab 03 yang sengaja gagal](screenshots/lab03_challenge_awal.png)
+
+*Perintah: `bash tests/challenge.sh`. Skrip menguji publikasi port, sertifikat, HTTPS, segmentasi, dan healthcheck. Baca baris `FAIL` dan petunjuknya sebagai daftar pekerjaan; pada starter kegagalan ini memang diharapkan. Setelah perbaikan, jalankan lagi dan pastikan semua pemeriksaan lolos.*
 
 ## 5. Aktifkan TLS dan selesaikan tantangan
 
@@ -133,13 +151,17 @@ docker compose ps
 
 **Checkpoint 5:** HTTPS menjawab 200 dengan `--cacert`; sertifikat memuat nama `web` dan masih berlaku; smoke tetap hijau; challenge menjadi hijau (pada penyelesaian paket uji **15 PASS, 0 FAIL**); healthcheck keluar 0 dengan minimal 10 pemeriksaan lolos. Port host 3000/5432 tidak lagi dipublish. Sertifikat ini **self-signed**, sehingga browser biasa dapat memberi peringatan kepercayaan.
 
-![Contoh tampilan web setelah HTTPS dan segmentasi jaringan aktif](screenshots/lab03_web_https_target.png)
+![Contoh bagian atas web setelah HTTPS dan segmentasi aktif](screenshots/lab03_web_https_target_top.png)
 
-*Ini contoh target web dari salinan uji. Perhatikan label HTTPS dan protokol `https, h2`; alamat container serta waktu pada hasil Anda dapat berbeda. Periksa kolom `PORTS` pada `docker compose ps` Anda sendiri untuk membuktikan API dan DB tidak lagi dipublish.*
+*Perintah setelah mengaktifkan TLS: `docker compose up -d --force-recreate --wait`, lalu `docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health`. `--cacert` memverifikasi sertifikat self-signed lab dan koneksi nginx port 443; respons harus `200`. Saat membuka `https://localhost:8443` secara lokal, baca label 8443 -> 443, badge HTTPS, dan empat tier hijau. Browser dapat memperingatkan sertifikat self-signed.*
+
+![Contoh POST form HTTPS yang menyimpan catatan ke PostgreSQL](screenshots/lab03_web_https_target_post.png)
+
+*Langkah UI: isi **Tulis catatan**, lalu klik **Simpan catatan**. Browser mengirim POST `/api/notes` melalui nginx ke API; API menulis ke PostgreSQL. Baca pesan `201 Created` dan catatan baru di daftar. Ini membuktikan jalur tulis frontend -> backend -> database tetap bekerja setelah TLS/segmentasi.*
 
 ![Contoh status Docker Compose setelah hanya web mem-publish port host](screenshots/lab03_docker_target.png)
 
-*Contoh status ini menampilkan target akhir: `api` dan `db` hanya memiliki port internal container, sedangkan `web` mem-publish 8080 dan 8443. Hasil uji dan konfigurasi yang Anda kerjakan tetap harus dibuktikan dari terminal sendiri.*
+*Perintah pada gambar: `docker compose ps --format 'table {{.Service}}\t{{.Status}}\t{{.Ports}}'` setelah perubahan Compose diterapkan. Docker menampilkan port host hanya pada `web`: 8080 -> 80 dan 8443 -> 443. `api` dan `db` masih healthy pada port internal 3000/5432 tetapi tidak lagi punya mapping host. Buktikan bersama `bash tests/smoke.sh` dan `bash tests/challenge.sh` milik Anda.*
 
 ## Pertanyaan yang dijawab di laporan
 
