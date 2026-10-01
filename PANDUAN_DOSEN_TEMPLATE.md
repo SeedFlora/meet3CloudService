@@ -132,7 +132,7 @@ Minta mahasiswa membuat sertifikat dengan `bash scripts/make-cert.sh`, menyalin 
 
 ```bash
 docker compose up -d --force-recreate --wait
-docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health
+docker compose exec toolbox curl -i --cacert /lab/web/certs/lab.crt https://web/api/health
 docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -issuer -dates -ext subjectAltName
 docker compose exec toolbox bash scripts/healthcheck.sh
 bash tests/smoke.sh
@@ -155,6 +155,93 @@ Hasil acuan dari uji end-to-end **lokal** pada paket ini: starter empat service 
 ![Contoh Compose akhir: hanya web mem-publish port host](screenshots/lab03_docker_target.png)
 
 *Perintah pada gambar: `docker compose ps --format 'table {{.Service}}\t{{.Status}}\t{{.Ports}}'` setelah Compose direcreate. Tunjuk `web` mem-publish 8080 -> 80 dan 8443 -> 443, sedangkan API/DB hanya port internal dan tetap healthy. Bandingkan dengan nmap awal serta `bash tests/smoke.sh` dan `bash tests/challenge.sh` akhir. Gambar target berasal dari salinan uji, bukan bukti mahasiswa.*
+
+## Panduan dosen: menuntun `challenge.sh` sampai tuntas
+
+Bagian ini adalah urutan mengajar dan mendiagnosis, bukan file jawaban untuk disalin mahasiswa. Jalankan `bash tests/challenge.sh` dari **root repo pada terminal host/Codespaces**, karena skrip memanggil Docker Compose. Jalankan `scripts/healthcheck.sh` **di toolbox**. Challenge membaca keadaan sistem; ia tidak memperbaiki file otomatis.
+
+### 0. Ambil bukti sebelum perubahan
+
+```bash
+docker compose config -q
+docker compose up -d --build --wait
+docker compose ps
+bash tests/smoke.sh
+bash tests/challenge.sh
+echo $?
+```
+
+`config -q` memeriksa YAML dan hasil interpolasi Compose tanpa output bila valid. `up --wait` menunggu healthcheck container. `smoke.sh` memastikan fungsi dasar tetap bekerja sebelum desain diubah (paket uji: 12 PASS). `challenge.sh` biasanya keluar bukan 0 pada starter; angka PASS/FAIL dapat berubah jika mahasiswa sudah membuat sertifikat atau ada port lain di komputer. Minta screenshot **output awal milik mahasiswa**, bukan angka tertentu. `echo $?` menampilkan exit code perintah terakhir di Bash: 0 berarti seluruh pemeriksaan challenge lulus.
+
+Skrip memuat helper dari `tests/lib.sh`, lalu membagi pemeriksaan ke **A-F**. A membaca `docker compose config --format json`; B-F memerlukan stack hidup. Jika host belum memiliki `jq`, helper memakai `jq` di toolbox. Jangan menyimpulkan masalah desain dari pesan `compose.yaml tidak valid`: betulkan sintaks YAML terlebih dahulu.
+
+### 1. Baca hasil A: desain Compose (3 PASS)
+
+1. **Publisher host:** hanya `web` boleh punya bagian `ports:`. `api:3000` dan `db:5432` tetap bisa dihubungi lewat jaringan internal walaupun tidak dipublish ke host. `expose:` hanya dokumentasi port internal dan tidak menggantikan `ports:`.
+2. **Port TLS:** `web` harus memetakan sebuah port host ke **port container 443**, contoh host 8443 ke container 443. HTTP 8080 ke 80 boleh tetap ada agar perbandingan awal/akhir terlihat.
+3. **Segmentasi:** `web` dan `db` tidak boleh berbagi jaringan. Hubungan yang diperlukan adalah `web`- `api` di `app`, serta `api`- `db` di `data`; toolbox boleh bergabung ke ketiga jaringan sebagai alat uji. `data.internal: true` adalah bonus, bukan syarat 15 PASS.
+
+Minta mahasiswa membaca baris `service yang mem-publish port ke host`, `web belum mem-publish port 443`, dan `web dan db sama-sama terhubung` satu per satu. Setelah edit `compose.yaml`, ulangi `docker compose config -q`. Nilai desain harus dibuktikan lagi pada runtime; menghapus `ports:` di file tanpa membuat ulang container dapat meninggalkan mapping lama.
+
+### 2. Baca hasil B: sertifikat (3 PASS)
+
+```bash
+bash scripts/make-cert.sh
+docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -issuer -dates -ext subjectAltName
+```
+
+Perintah pertama membuat sertifikat dan kunci lab. Perintah kedua membaca sertifikat tanpa membocorkan isi private key. Tunjuk tiga SAN wajib: `DNS:localhost`, `DNS:web`, dan `IP Address:127.0.0.1`. Challenge juga meminta sertifikat masih berlaku **minimal tujuh hari**. Jika file hilang, SAN kurang, atau masa berlaku pendek, buat ulang dengan `make-cert.sh`. `web/certs/lab.key` tetap lokal dan tidak masuk Git.
+
+### 3. Baca hasil C: HTTPS nginx dari toolbox (2 PASS)
+
+```bash
+cp web/nginx/https.conf.example web/nginx/https.conf
+docker compose up -d --force-recreate --wait
+docker compose exec toolbox curl -i --cacert /lab/web/certs/lab.crt https://web/api/health
+docker compose exec -T toolbox \
+  openssl s_client -connect web:443 -servername web \
+  -CAfile /lab/web/certs/lab.crt -verify_hostname web \
+  </dev/null
+```
+
+Nginx memuat berkas berakhiran `.conf`; `.conf.example` sendiri belum mengaktifkan HTTPS. Buat sertifikat sebelum me-recreate `web`, karena konfigurasi TLS membutuhkannya. `curl --cacert` memvalidasi sertifikat self-signed lab dan mengirim GET melalui nginx ke API dan database; baca JSON `status: ok`, `db: up`, dan HTTP 200. OpenSSL harus menampilkan `Verify return code: 0 (ok)` untuk nama `web`. Jangan memakai `curl -k` sebagai bukti C: opsi itu melewati verifikasi sertifikat. HTTPS pada URL forwarding Codespaces juga belum membuktikan nginx port 443 aktif.
+
+Jika status `000`/connection refused, cek `docker compose ps`, `docker compose logs web`, nama `https.conf`, dan sertifikat. Jika HTTPS menjawab **502/503/504**, periksa `docker compose logs api` dan kesehatan DB; sesudah perubahan jaringan gunakan `--force-recreate --wait`.
+
+### 4. Baca hasil D: exposure host (5 PASS)
+
+```bash
+docker compose ps
+curl -i -k https://127.0.0.1:8443/api/health
+docker compose exec toolbox nmap -sT -Pn -p 8080,8443,3000,5432 host.docker.internal
+```
+
+Port host HTTPS yang sebenarnya mengikuti mapping Anda (contoh **8443**). `curl -k` di langkah ini hanya memeriksa endpoint host dengan sertifikat self-signed; validasi trust tetap memakai `--cacert` pada C. Target akhir: HTTPS host memberi 200, sedangkan 3000 dan 5432 **tertutup dari dua sudut**: `127.0.0.1` pada host dan `host.docker.internal` dari toolbox. Challenge menghitung satu PASS untuk host HTTPS dan empat PASS untuk dua port dari dua sudut itu. Jika satu port masih `open`, cocokkan `docker compose ps` dengan `ports:` dan cek aplikasi lain yang memakai port yang sama.
+
+### 5. Baca hasil E: segmentasi yang benar (1 PASS)
+
+Challenge mencoba membuka `db:5432` **dari container web** melalui nama `db`, setiap IP container DB, dan gateway host Docker. Ketiganya harus gagal. Pertanyaan penting untuk diskusi: walaupun DNS `db` tidak ter-resolve dari `web`, apakah DB yang masih dipublish pada host bisa dicapai melalui gateway? Pada desain awal, jalur host dapat melubangi segmentasi. Karena itu perubahan jaringan **dan** penghapusan publish DB harus diperiksa bersama. Toolbox tetap boleh menghubungi DB, karena toolbox sengaja berada di jaringan `data`.
+
+### 6. Baca hasil F: lima fungsi healthcheck (1 PASS)
+
+```bash
+docker compose exec toolbox bash scripts/healthcheck.sh
+echo $?
+```
+
+Mahasiswa melengkapi lima fungsi bertanda TODO di `scripts/healthcheck.sh`: DNS untuk tiga nama service, TCP untuk `web:80`, `web:443`, `api:3000`, `db:5432`, HTTP health melalui proxy, TLS beserta masa berlaku/hostname, dan exposure host. Fungsi `ok` menambah penghitung lolos, `bad` menambah gagal, `todo` menandai fungsi belum dikerjakan. Target challenge: exit code **0**, baris `Ringkasan: N lolos, 0 gagal, 0 TODO`, dan **N minimal 10** (penyelesaian paket uji: 16). Exit 0 dengan 9 lolos tetap gagal F. Jika ada `[TODO]` atau `[GAGAL]`, gunakan nama section untuk kembali ke fungsi yang tepat.
+
+### 7. Uji regresi dan simpulkan 15 PASS
+
+```bash
+docker compose up -d --force-recreate --wait
+docker compose exec toolbox bash scripts/healthcheck.sh
+bash tests/smoke.sh
+bash tests/challenge.sh
+docker compose ps
+```
+
+Hitung hasil akhir menurut kelompok: **A 3 + B 3 + C 2 + D 5 + E 1 + F 1 = 15 PASS**. Smoke harus tetap hijau (paket uji: 12 PASS, 0 FAIL), karena menutup port host API/DB tidak boleh memutus jalur internal browser -> nginx -> API -> PostgreSQL. Pada `docker compose ps`, hanya `web` mempunyai mapping host 8080/8443; `api` dan `db` tetap healthy. Mahasiswa menyimpan screenshot **awal dan akhir**, menjelaskan perubahan yang menyebabkan tiap FAIL berubah menjadi PASS, lalu commit/push. Jika challenge masih merah, baca kelompok gagal; jangan mengulang semua perubahan secara acak.
 
 ## Penilaian
 
