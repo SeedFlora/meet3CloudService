@@ -1,5 +1,7 @@
 # Modul mahasiswa — Lab 03: DNS, HTTP, TLS, dan segmentasi jaringan
 
+**Cara membaca bukti visual.** Setiap langkah bernomor di bawah mempunyai gambar hasil atau tampilan yang perlu diperiksa. Foto Codespaces, browser, dan Docker Desktop adalah tangkapan layar langsung. Gambar terminal berlatar gelap adalah cuplikan keluaran perintah yang benar-benar dijalankan dan ditata ulang agar teks terbaca; jalankan command pada blok di atas gambar untuk menghasilkan bukti praktik Anda sendiri. Alamat IP, waktu, dan nomor catatan dapat berbeda.
+
 **COMP6991031 · sesi 3.** Repo ini berisi nginx (`web`), API Node.js (`api`), PostgreSQL (`db`), serta `toolbox` dengan alat jaringan. Bacalah juga [README lab](README.md) dan [panduan Git](PANDUAN_GIT.md). Akses dan pemindaian dalam modul ini **hanya untuk service lab milik Anda**.
 
 ## Tujuan dan teori ringkas
@@ -163,6 +165,18 @@ docker compose ps
 
 *Perintah pada gambar: `docker compose ps --format 'table {{.Service}}\t{{.Status}}\t{{.Ports}}'` setelah perubahan Compose diterapkan. Docker menampilkan port host hanya pada `web`: 8080 -> 80 dan 8443 -> 443. `api` dan `db` masih healthy pada port internal 3000/5432 tetapi tidak lagi punya mapping host. Buktikan bersama `bash tests/smoke.sh` dan `bash tests/challenge.sh` milik Anda.*
 
+![OpenSSL menampilkan nama web dan masa berlaku sertifikat lab](screenshots/lab03_cert_san_live.png)
+
+*Perintah: `docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -issuer -dates -ext subjectAltName`. OpenSSL membaca sertifikat tanpa membuka private key. Baca `DNS:web` pada Subject Alternative Name serta tanggal `notBefore`/`notAfter`; nama host dan tanggal ini menentukan apakah verifikasi TLS dapat lulus.*
+
+![HTTPS melalui nginx mengembalikan status 200](screenshots/lab03_https_health_live.png)
+
+*Perintah: `docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health`. `--cacert` mempercayai CA/sertifikat lab khusus untuk request ini dan tetap memeriksa nama `web`. Baca HTTP 200 dan status database `up`; ini berbeda dari HTTPS forwarding Codespaces pada starter.*
+
+![Challenge akhir menunjukkan seluruh bagian A sampai F lulus](screenshots/lab03_challenge_df_summary_live.png)
+
+*Perintah: `bash tests/challenge.sh` setelah perbaikan. Checker memverifikasi konfigurasi Compose, sertifikat, HTTPS, exposure host, segmentasi, dan healthcheck. Baca ringkasan `15 PASS, 0 FAIL`. Gambar adalah cuplikan keluaran aktual yang ditata ulang; simpan output lengkap dari praktik Anda sendiri.*
+
 ## Pertanyaan yang dijawab di laporan
 
 1. Uraikan jalur request dari browser ke `db`, beserta nama jaringan dan port pada tiap langkah.
@@ -191,10 +205,22 @@ git push
 
 Periksa staged diff **secara lokal**: `web/certs/lab.key`, `.env`, token, password nyata, NIM, dan screenshot kredensial tidak boleh masuk. Kunci dan sertifikat yang dibuat skrip masuk `.gitignore`; `web/nginx/https.conf` serta konfigurasi/tugas Anda boleh di-commit. Jika push pertama perlu upstream, gunakan `git push -u origin main` bila branch `main`. Workflow `.github/workflows/ci.yml` berada di root repo ini dan akan berjalan setelah push. Job `student` merah sampai `student.json` diisi; job `challenge` sengaja merah sampai perbaikan selesai.
 
+![Pemeriksaan Git mengecualikan private key sebelum commit](screenshots/lab03_git_safety_live.png)
+
+*Perintah: `git status --short` dan `git check-ignore web/certs/lab.key`, kemudian `git diff --cached --name-only` setelah `git add`. `status` memperlihatkan file yang berubah, `check-ignore` membuktikan private key tidak ikut commit, dan daftar staged harus berisi hanya pekerjaan kelas yang aman dibagikan. Gambar adalah cuplikan output aktual yang ditata ulang.*
+
+![Contoh repo GitHub yang sudah menerima commit materi Lab 03](screenshots/lab03_github_published.jpg)
+
+*Langkah UI setelah `git push`: buka repo milik Anda di GitHub, periksa branch `main`, pesan commit terbaru, dan berkas modul/kode yang muncul. Gambar menunjukkan repo template dosen, sehingga nama repo dan pesan commit mahasiswa akan berbeda. Tanda merah pada commit template berasal dari challenge starter yang memang belum dikerjakan; setelah solusi Anda di-push, buka tab **Actions** untuk menilai run milik Anda.*
+
 ## Berhenti dan mengatasi masalah
 
 ```bash
 docker compose down
 ```
+
+![Hasil cleanup: container lab berhenti, volume database tetap tersimpan](screenshots/lab03_cleanup_live.png)
+
+*Perintah: `docker compose down` lalu `docker compose ps`. Docker menghentikan dan menghapus container serta network lab; daftar `ps` menjadi kosong. Karena tidak memakai `-v`, volume database tetap ada untuk praktik berikutnya. Gambar adalah cuplikan keluaran perintah aktual yang ditata ulang.*
 
 Perintah ini mempertahankan volume database; `docker compose down -v` menghapus data latihan bila Anda memang ingin reset. Jika `api`/`db` belum sehat, lihat `docker compose logs api db`. Jika nginx gagal setelah `https.conf` dibuat, pastikan sertifikat sudah dibuat dan lihat `docker compose logs web`. Setelah mengubah jaringan, gunakan `--force-recreate`. Jika port bentrok, hentikan Lab 01 atau service lokal lain. Jika `dig`, `nmap`, atau `openssl` tidak ada di host, jalankan perintahnya **di toolbox**.

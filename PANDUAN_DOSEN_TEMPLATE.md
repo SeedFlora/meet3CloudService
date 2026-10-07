@@ -1,5 +1,7 @@
 # Panduan dosen - Lab 03 Networking & Web Services
 
+**Jenis gambar:** foto Codespaces, browser, dan Docker Desktop adalah tangkapan layar langsung. Kartu terminal menampilkan keluaran perintah uji yang ditata ulang agar mudah dibaca; minta mahasiswa menghasilkan screenshot terminal miliknya sendiri. Setiap checkpoint dan bagian challenge A-F di bawah menunjuk perintah, tujuan, cara kerja, serta hasil acuan.
+
 **COMP6991031 | Pertemuan 3 | 120 menit**
 Repo kelas: [SeedFlora/meet3CloudService](https://github.com/SeedFlora/meet3CloudService) (**Public template**). Materi pendamping: [modul mahasiswa](MODUL_MAHASISWA.md), [panduan Git](PANDUAN_GIT.md), dan [template laporan](hasil/TEMPLATE_LAPORAN.md).
 
@@ -294,6 +296,10 @@ Hitung hasil akhir menurut kelompok: **A 3 + B 3 + C 2 + D 5 + E 1 + F 1 = 15 PA
 ![Pemeriksaan Git sebelum mengumpulkan solusi](screenshots/lab03_git_safety_live.png)
 
 *Langkah: Jalankan `git status --short` dan `git check-ignore web/certs/lab.key` sebelum commit. Fungsi: Meninjau file yang akan ikut Git dan memastikan private key dikecualikan. Cara kerja: Git membaca working tree dan aturan ignore. Baca hasil: Path `lab.key` keluar dari `check-ignore`; daftar file berubah pada salinan uji dapat berbeda dari pekerjaan mahasiswa dan bukan daftar wajib.*
+
+![Repo template Lab 03 tampak setelah materi dipush](screenshots/lab03_github_published.jpg)
+
+*Langkah dosen: setelah mahasiswa `git push`, buka tautan repo pribadinya di GitHub dan cocokkan branch `main`, commit akhir, file laporan, serta run **Actions**. Gambar ini adalah repo template dosen, bukan bukti mahasiswa. Tanda merah pada commit template berhubungan dengan challenge starter yang sengaja gagal; nilai mahasiswa memakai hasil solusi dan run miliknya.*
 
 ![Stack latihan dihentikan tanpa menghapus volume database](screenshots/lab03_cleanup_live.png)
 

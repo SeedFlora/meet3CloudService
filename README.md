@@ -2,7 +2,7 @@
 
 Praktikum COMP6991031, sesi 3. Repo kelas [SeedFlora/meet3CloudService](https://github.com/SeedFlora/meet3CloudService) disiapkan untuk **GitHub Codespaces** atau Docker lokal. Empat service Docker Compose menyediakan target latihan: nginx (`web`), API Node.js (`api`), PostgreSQL (`db`), dan `toolbox` berisi `dig`, `nslookup`, `ping`, `traceroute`, `curl`, `wget`, `nmap`, `nc`, serta `openssl`.
 
-**Mulai dari [modul mahasiswa bergambar](MODUL_MAHASISWA.md).** Gambar menunjukkan tampilan web, status Docker, dan hasil perintah pada checkpoint utama. Gambar contoh bukan pengganti bukti praktik Anda sendiri.
+**Mulai dari [modul mahasiswa bergambar](MODUL_MAHASISWA.md).** Setiap langkah bernomor mempunyai bukti visual beserta command, tujuan, cara kerja, dan hasil yang perlu dibaca. Foto Codespaces/browser/Docker adalah screenshot langsung; kartu terminal adalah keluaran perintah aktual yang ditata ulang. Gambar contoh bukan pengganti bukti praktik Anda sendiri.
 
 Untuk dosen tersedia [panduan kelas, rubrik, dan langkah rinci challenge A-F](PANDUAN_DOSEN_TEMPLATE.md). Versi PDF untuk dibaca atau dicetak: [modul mahasiswa](output/pdf/MODUL_MAHASISWA_LAB03.pdf), [panduan dosen](output/pdf/PANDUAN_DOSEN_LAB03.pdf), [panduan Git](output/pdf/PANDUAN_GIT_LAB03.pdf), dan **[kunci jawaban mahasiswa terpisah](output/pdf/KUNCI_JAWABAN_MAHASISWA_LAB03.pdf)**. [Sumber Markdown kunci jawaban](KUNCI_JAWABAN_MAHASISWA_LAB03.md) memudahkan penyalinan kode. [Slide Lab 03 bergambar](slides/LAB03_Networking_Revisi_Bukti_Live.pptx) berisi command, hasil, dan penjelasan untuk presentasi kelas.
 

@@ -277,6 +277,18 @@ git push
 
 `git check-ignore` harus menampilkan `web/certs/lab.key`. Jangan commit kunci privat, `.env`, token, atau data pribadi. CI `stack` dan `challenge` akan berjalan setelah push; `student` memerlukan `student.json` terisi. Saat selesai, `docker compose down` menghentikan container tanpa menghapus volume database.
 
+![Git mengecualikan private key pada salinan solusi](screenshots/lab03_git_safety_live.png)
+
+*Perintah: `git status --short` dan `git check-ignore web/certs/lab.key`. Status menunjukkan pekerjaan yang akan di-commit; output `lab.key` dari `check-ignore` membuktikan private key tidak ikut. Kartu ini adalah keluaran uji yang ditata ulang, sehingga file berubah pada repo Anda bisa berbeda.*
+
+![Lokasi commit hasil push pada halaman repo GitHub](screenshots/lab03_github_published.jpg)
+
+*Langkah UI: buka repo GitHub milik Anda sesudah `git push`, lalu lihat branch `main`, commit terbaru, dan berkas solusi. Gambar menampilkan template dosen sebagai petunjuk lokasi; pesan commit dan hasil Actions di repo mahasiswa harus mengikuti pekerjaan mahasiswa sendiri.*
+
+![Compose menutup container tanpa menghapus volume database](screenshots/lab03_cleanup_live.png)
+
+*Perintah: `docker compose down` lalu `docker compose ps`. Docker menghapus container dan network milik lab, daftar `ps` menjadi kosong, sedangkan volume tetap ada karena perintah tidak memakai `-v`. Kartu adalah keluaran perintah aktual yang ditata ulang.*
+
 ## Jika hasil belum sesuai
 
 | Gejala | Perbaikan yang diperiksa |
