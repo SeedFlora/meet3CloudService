@@ -1,10 +1,22 @@
 # meet3CloudService — Lab 03 Networking & Web Services
 
+<!-- lecture-materials:start -->
+
+## Materi teori sebelum praktikum
+
+- [Pertemuan 03: Networking & Web Services](slides/Teori_Pertemuan_03.pptx)
+
+Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab.
+
+<!-- lecture-materials:end -->
+
+**Kebijakan kelas:** Lab ini latihan formatif, tanpa tugas, nilai, atau penyerahan terpisah. Satu proyek besar dikerjakan oleh kelompok **3 orang**, dengan presentasi checkpoint minggu 7 (UTS) dan hasil akhir minggu 14 (UAS). Simpan hasil lab hanya bila berguna sebagai referensi atau bukti proses proyek. Baca [brief proyek kelompok](PROYEK_KELOMPOK.md). Bobot resmi tetap mengikuti RPS/LMS.
+
 Praktikum COMP6991031, sesi 3. Repo kelas [SeedFlora/meet3CloudService](https://github.com/SeedFlora/meet3CloudService) disiapkan untuk **GitHub Codespaces** atau Docker lokal. Empat service Docker Compose menyediakan target latihan: nginx (`web`), API Node.js (`api`), PostgreSQL (`db`), dan `toolbox` berisi `dig`, `nslookup`, `ping`, `traceroute`, `curl`, `wget`, `nmap`, `nc`, serta `openssl`.
 
 **Mulai dari [modul mahasiswa bergambar](MODUL_MAHASISWA.md).** Setiap langkah bernomor mempunyai bukti visual beserta command, tujuan, cara kerja, dan hasil yang perlu dibaca. Foto Codespaces/browser/Docker adalah screenshot langsung; kartu terminal adalah keluaran perintah aktual yang ditata ulang. Gambar contoh bukan pengganti bukti praktik Anda sendiri.
 
-Untuk dosen tersedia [panduan kelas, rubrik, dan langkah rinci challenge A-F](PANDUAN_DOSEN_TEMPLATE.md). Versi PDF untuk dibaca atau dicetak: [modul mahasiswa](output/pdf/MODUL_MAHASISWA_LAB03.pdf), [panduan dosen](output/pdf/PANDUAN_DOSEN_LAB03.pdf), [panduan Git](output/pdf/PANDUAN_GIT_LAB03.pdf), dan **[kunci jawaban mahasiswa terpisah](output/pdf/KUNCI_JAWABAN_MAHASISWA_LAB03.pdf)**. [Sumber Markdown kunci jawaban](KUNCI_JAWABAN_MAHASISWA_LAB03.md) memudahkan penyalinan kode. [Slide Lab 03 bergambar](slides/LAB03_Networking_Revisi_Bukti_Live.pptx) berisi command, hasil, dan penjelasan untuk presentasi kelas.
+Versi PDF untuk dibaca atau dicetak: [modul mahasiswa](output/pdf/MODUL_MAHASISWA_LAB03.pdf), dan **[kunci jawaban mahasiswa terpisah](output/pdf/KUNCI_JAWABAN_MAHASISWA_LAB03.pdf)**. [Sumber Markdown kunci jawaban](KUNCI_JAWABAN_MAHASISWA_LAB03.md) memudahkan penyalinan kode. [Slide Lab 03 bergambar](slides/LAB03_Networking_Revisi_Bukti_Live.pptx) berisi command, hasil, dan penjelasan untuk presentasi kelas.
 
 Verifikasi 1 Oktober 2026: Codespaces pada commit `5825663` berhasil menjalankan empat service, smoke **12 PASS/0 FAIL**, dan form web menyimpan catatan dengan **201 Created**. Solusi yang diuji lokal menghasilkan healthcheck **16 PASS/0 FAIL** dan challenge **15 PASS/0 FAIL**. Kunci jawaban tersedia terpisah; challenge pada starter memang merah sebelum dikerjakan.
 
@@ -35,9 +47,9 @@ Browser → `web:80` → `api:3000` → `db:5432`. DNS internal Docker menyelesa
 
 Pekerjaan kode yang diperlukan adalah mengubah `compose.yaml` dan `web/nginx/https.conf`, serta melengkapi fungsi TODO di `scripts/healthcheck.sh`. Tidak perlu menulis aplikasi frontend/backend baru untuk sesi ini.
 
-## Pengumpulan
+## Catatan latihan
 
-Isi `student.json` tanpa NIM, salin [templat laporan](hasil/TEMPLATE_LAPORAN.md) ke `hasil/lab03.md`, dan simpan screenshot hasil sendiri dalam `hasil/bukti/lab03/`. Ikuti [panduan Git](PANDUAN_GIT.md) untuk commit dan push repo pribadi. Job Actions `student` akan merah sebelum `student.json` diisi; job `challenge` sengaja merah pada starter hingga tantangan selesai.
+Isi `student.json` tanpa NIM untuk mencoba alur CI. Bila ingin menyimpan proses sebagai referensi proyek, salin [templat catatan](hasil/TEMPLATE_LAPORAN.md) ke `hasil/lab03.md` dan simpan screenshot hasil sendiri dalam `hasil/bukti/lab03/`. [Panduan Git](PANDUAN_GIT.md) menjelaskan commit dan push opsional ke repo pribadi. Job Actions `student` akan merah sebelum `student.json` diisi; job `challenge` sengaja merah pada starter hingga tantangan selesai.
 
 Jalankan pemindaian hanya pada service lab sendiri. Jangan commit private key, token, password nyata, atau data pribadi. Password `labpass` di `compose.yaml` adalah data latihan yang memang sengaja dibagikan, bukan kredensial layanan pribadi.
 

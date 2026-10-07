@@ -1,5 +1,7 @@
 # Modul mahasiswa — Lab 03: DNS, HTTP, TLS, dan segmentasi jaringan
 
+**Kebijakan kelas:** Lab ini latihan formatif, tanpa tugas, nilai, atau penyerahan terpisah. Satu proyek besar dikerjakan oleh kelompok **3 orang**, dengan presentasi checkpoint minggu 7 (UTS) dan hasil akhir minggu 14 (UAS). Simpan hasil lab hanya bila berguna sebagai referensi atau bukti proses proyek. Baca [brief proyek kelompok](PROYEK_KELOMPOK.md). Bobot resmi tetap mengikuti RPS/LMS.
+
 **Cara membaca bukti visual.** Setiap langkah bernomor di bawah mempunyai gambar hasil atau tampilan yang perlu diperiksa. Foto Codespaces, browser, dan Docker Desktop adalah tangkapan layar langsung. Gambar terminal berlatar gelap adalah cuplikan keluaran perintah yang benar-benar dijalankan dan ditata ulang agar teks terbaca; jalankan command pada blok di atas gambar untuk menghasilkan bukti praktik Anda sendiri. Alamat IP, waktu, dan nomor catatan dapat berbeda.
 
 **COMP6991031 · sesi 3.** Repo ini berisi nginx (`web`), API Node.js (`api`), PostgreSQL (`db`), serta `toolbox` dengan alat jaringan. Bacalah juga [README lab](README.md) dan [panduan Git](PANDUAN_GIT.md). Akses dan pemindaian dalam modul ini **hanya untuk service lab milik Anda**.
