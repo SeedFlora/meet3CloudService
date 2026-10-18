@@ -13,13 +13,27 @@ Anda akan menelusuri satu request melalui DNS → IP/port/TCP → HTTP → rever
 ## Prasyarat
 
 - Docker Desktop/Engine dengan Compose plugin aktif dan ruang disk untuk image. Di Windows, jalankan skrip `bash` dari Git Bash atau WSL; `docker compose` harus tersambung ke Engine.
-- Jalur utama kelas: GitHub Codespaces dari repo pribadi hasil template dosen. Folder `.devcontainer/` sudah berada di root repo. Jalur lokal memakai Docker Desktop/Engine.
+- Jalur utama: laptop Windows, Docker Desktop dengan Linux Engine, dan terminal Git Bash. Buka folder repo di VS Code, pilih **Terminal → New Terminal → Git Bash**. Semua blok Bash dijalankan di terminal ini. Codespaces adalah alternatif di akhir README.
 - Hentikan server Lab 01 terlebih dahulu: starter ini memakai host port **3000**; ia juga memakai **8080** dan **5432**. Jika port bentrok, periksa service yang sedang aktif.
-- `student.json` di root repo masih contoh. Isi nama, kelas, dan username GitHub tanpa NIM sebelum mengumpulkan.
+- `student.json` di root repo masih contoh. Isi nama publik, kelas, dan username GitHub tanpa NIM untuk latihan validasi identitas; tidak ada pengumpulan per lab.
+
+## 0. Clone ke laptop
+
+Buka Docker Desktop hingga **Engine running**, kemudian buka **Git Bash**. Jalankan blok ini sekali untuk membuat salinan baru di folder pengguna:
+
+```bash
+cd ~
+git clone https://github.com/SeedFlora/meet3CloudService.git meet3CloudService-local
+cd meet3CloudService-local
+pwd
+ls compose.yaml tests/smoke.sh
+```
+
+Hasil: terminal berada di `meet3CloudService-local` dan kedua file ditemukan. Buka folder ini di VS Code. Inilah root repo untuk seluruh perintah host berikut. Folder clone yang sudah tersedia boleh dibuka langsung, lalu periksa `pwd` dan dua file tersebut. Tidak perlu membuat Codespace atau repo pribadi untuk praktik lokal.
 
 ## 1. Preflight dan hidupkan empat service
 
-Dari root repo, gunakan terminal Codespaces atau Bash/Git Bash:
+Dari root repo pada terminal Git Bash, jalankan satu per satu:
 
 ```bash
 docker compose version
@@ -135,18 +149,18 @@ Gambar berikut berasal dari materi sumber dan menunjukkan kegagalan awal yang me
 Di root repo, buat sertifikat lab **lebih dahulu**, lalu aktifkan konfigurasi nginx:
 
 ```bash
-bash scripts/make-cert.sh
+docker compose exec toolbox bash scripts/make-cert.sh
 cp web/nginx/https.conf.example web/nginx/https.conf
 ```
 
-Edit `compose.yaml`: hanya `web` yang boleh mem-publish port host, dan `web` perlu mapping host **8443** ke container **443**. Pertahankan komunikasi `web`↔`api` pada jaringan `app` dan `api`↔`db` pada jaringan `data`. Edit `scripts/healthcheck.sh`: lengkapi lima fungsi `check_dns`, `check_tcp`, `check_http`, `check_tls`, dan `check_exposure` sesuai TODO di file. Jangan salin kunci privat ke laporan/repo.
+Buka [kunci langkah lengkap](KUNCI_JAWABAN_MAHASISWA_LAB03.md), lalu ikuti bagian **2 sampai 5** secara berurutan. Bagian 2 menunjukkan persis blok port/jaringan yang diubah di `compose.yaml`. Bagian 3 mengaktifkan TLS. Bagian 5 berisi isi lengkap lima fungsi `healthcheck.sh` yang dapat disalin. Hanya `web` mem-publish 8080/8443, komunikasi web–API tetap pada `app`, dan API–DB pada `data`. Jangan salin kunci privat ke catatan/repo.
 
-Terapkan perubahan dan uji:
+Di Git Bash, `MSYS_NO_PATHCONV=1` menjaga path `/lab/...` agar tetap menjadi path Linux di container. OpenSSL berjalan di toolbox sehingga tidak perlu dipasang di Windows. Terapkan perubahan dan uji:
 
 ```bash
 docker compose up -d --force-recreate --wait
-docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health
-docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -issuer -dates -ext subjectAltName
+MSYS_NO_PATHCONV=1 docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health
+MSYS_NO_PATHCONV=1 docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -issuer -dates -ext subjectAltName
 docker compose exec toolbox bash scripts/healthcheck.sh
 bash tests/smoke.sh
 bash tests/challenge.sh
@@ -157,7 +171,7 @@ docker compose ps
 
 ![Contoh bagian atas web setelah HTTPS dan segmentasi aktif](screenshots/lab03_web_https_target_top.png)
 
-*Perintah setelah mengaktifkan TLS: `docker compose up -d --force-recreate --wait`, lalu `docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health`. `--cacert` memverifikasi sertifikat self-signed lab dan koneksi nginx port 443; respons harus `200`. Saat membuka `https://localhost:8443` secara lokal, baca label 8443 -> 443, badge HTTPS, dan empat tier hijau. Browser dapat memperingatkan sertifikat self-signed.*
+*Perintah setelah mengaktifkan TLS: `docker compose up -d --force-recreate --wait`, lalu `MSYS_NO_PATHCONV=1 docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health`. `--cacert` memverifikasi sertifikat self-signed lab dan koneksi nginx port 443; respons harus `200`. Saat membuka `https://localhost:8443` secara lokal, baca label 8443 -> 443, badge HTTPS, dan empat tier hijau. Browser dapat memperingatkan sertifikat self-signed.*
 
 ![Contoh POST form HTTPS yang menyimpan catatan ke PostgreSQL](screenshots/lab03_web_https_target_post.png)
 
@@ -169,17 +183,17 @@ docker compose ps
 
 ![OpenSSL menampilkan nama web dan masa berlaku sertifikat lab](screenshots/lab03_cert_san_live.png)
 
-*Perintah: `docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -issuer -dates -ext subjectAltName`. OpenSSL membaca sertifikat tanpa membuka private key. Baca `DNS:web` pada Subject Alternative Name serta tanggal `notBefore`/`notAfter`; nama host dan tanggal ini menentukan apakah verifikasi TLS dapat lulus.*
+*Perintah: `MSYS_NO_PATHCONV=1 docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -issuer -dates -ext subjectAltName`. OpenSSL membaca sertifikat tanpa membuka private key. Baca `DNS:web` pada Subject Alternative Name serta tanggal `notBefore`/`notAfter`; nama host dan tanggal ini menentukan apakah verifikasi TLS dapat lulus.*
 
 ![HTTPS melalui nginx mengembalikan status 200](screenshots/lab03_https_health_live.png)
 
-*Perintah: `docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health`. `--cacert` mempercayai CA/sertifikat lab khusus untuk request ini dan tetap memeriksa nama `web`. Baca HTTP 200 dan status database `up`; ini berbeda dari HTTPS forwarding Codespaces pada starter.*
+*Perintah: `MSYS_NO_PATHCONV=1 docker compose exec toolbox curl --cacert /lab/web/certs/lab.crt https://web/api/health`. `--cacert` mempercayai CA/sertifikat lab khusus untuk request ini dan tetap memeriksa nama `web`. Baca HTTP 200 dan status database `up`; ini berbeda dari HTTPS forwarding Codespaces pada starter.*
 
 ![Challenge akhir menunjukkan seluruh bagian A sampai F lulus](screenshots/lab03_challenge_df_summary_live.png)
 
 *Perintah: `bash tests/challenge.sh` setelah perbaikan. Checker memverifikasi konfigurasi Compose, sertifikat, HTTPS, exposure host, segmentasi, dan healthcheck. Baca ringkasan `15 PASS, 0 FAIL`. Gambar adalah cuplikan keluaran aktual yang ditata ulang; simpan output lengkap dari praktik Anda sendiri.*
 
-## Pertanyaan yang dijawab di laporan
+## Pertanyaan diskusi
 
 1. Uraikan jalur request dari browser ke `db`, beserta nama jaringan dan port pada tiap langkah.
 2. Apa beda `web`, `api`, dan `localhost` sebagai nama target ketika perintah dijalankan di host dan di toolbox?
@@ -188,15 +202,15 @@ docker compose ps
 5. Mengapa `web` tidak perlu berbagi jaringan langsung dengan `db`? Apakah menghapus `ports:` dari `db` memutus koneksi `api` ke `db`?
 6. Mengapa `curl --cacert` dapat memverifikasi sertifikat self-signed lab, sedangkan browser mungkin memperingatkan pengguna?
 
-## Bukti, commit, dan push
+## Catatan dan Git opsional
 
-Salin [`hasil/TEMPLATE_LAPORAN.md`](hasil/TEMPLATE_LAPORAN.md) menjadi `hasil/lab03.md` dari root repo. Simpan screenshot **milik Anda** di `hasil/bukti/lab03/` untuk `docker compose ps` sebelum/sesudah, `smoke.sh`, `challenge.sh` sebelum/sesudah, informasi sertifikat, dan ringkasan healthcheck. Gambar contoh modul bukan bukti pribadi.
+Praktik lokal selesai setelah pemeriksaan akhir berhasil. Laporan, screenshot pribadi, commit, dan push di bagian ini hanya untuk referensi proyek pada repo pribadi. Salin [`hasil/TEMPLATE_LAPORAN.md`](hasil/TEMPLATE_LAPORAN.md) menjadi `hasil/lab03.md` dari root repo. Simpan screenshot **milik Anda** di `hasil/bukti/lab03/` untuk `docker compose ps` sebelum/sesudah, `smoke.sh`, `challenge.sh` sebelum/sesudah, informasi sertifikat, dan ringkasan healthcheck. Gambar contoh modul bukan bukti pribadi.
 
 Dari root repo:
 
 ```bash
 git status --short
-git add -A
+git add compose.yaml web/nginx/https.conf scripts/healthcheck.sh student.json hasil
 git diff --cached --name-only
 git diff --cached --check
 git diff --cached

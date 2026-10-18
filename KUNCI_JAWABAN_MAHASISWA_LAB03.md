@@ -67,9 +67,9 @@ Buat sertifikat **sebelum** mengaktifkan konfigurasi HTTPS nginx. Starter perlu 
 
 ```bash
 docker compose exec toolbox bash scripts/make-cert.sh
-docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -dates
-docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -ext subjectAltName
-docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -checkend 604800
+MSYS_NO_PATHCONV=1 docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -subject -dates
+MSYS_NO_PATHCONV=1 docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -ext subjectAltName
+MSYS_NO_PATHCONV=1 docker compose exec toolbox openssl x509 -in /lab/web/certs/lab.crt -noout -checkend 604800
 ```
 
 Skrip membuat `web/certs/lab.crt` dan `lab.key`. `lab.crt` adalah sertifikat publik; `lab.key` adalah **private key** dan sudah masuk `.gitignore`. Periksa SAN berisi `DNS:localhost`, `DNS:web`, dan `IP Address:127.0.0.1`. `checkend 604800` memberi exit 0 bila sertifikat masih berlaku setidaknya tujuh hari. Perintah melalui toolbox bekerja juga pada laptop yang tidak memasang OpenSSL di host.
@@ -90,7 +90,7 @@ Template nginx sudah berisi listener TLS port 443, path sertifikat, serta revers
 cp web/nginx/https.conf.example web/nginx/https.conf
 docker compose up -d --force-recreate --wait
 docker compose ps
-docker compose exec toolbox curl -i --cacert /lab/web/certs/lab.crt https://web/api/health
+MSYS_NO_PATHCONV=1 docker compose exec toolbox curl -i --cacert /lab/web/certs/lab.crt https://web/api/health
 ```
 
 `--force-recreate` menerapkan port/jaringan baru pada container. Respons curl harus **HTTP 200** dengan `status: ok` dan `db: up`. Opsi `--cacert` memeriksa sertifikat self-signed lab dan nama `web`; jangan mengganti bukti ini dengan `curl -k`.
@@ -226,7 +226,7 @@ Baris akhir harus `Ringkasan: 16 lolos, 0 gagal, 0 TODO` dan `Semua pemeriksaan 
 
 *Langkah: jalankan `docker compose exec -T toolbox bash scripts/healthcheck.sh`. Fungsi: menguji DNS, TCP, HTTP, TLS, dan exposure dari lokasi yang benar. Cara kerja: lima fungsi memanggil alat jaringan dan helper `ok`/`bad` menghitung hasil nyata. Baca hasil: 16 lolos, 0 gagal, 0 TODO, exit 0. Ini cuplikan output uji lokal yang ditata agar terbaca.*
 
-## 6. Uji akhir A-F, browser, dan Git
+## 6. Uji akhir A-F, browser, dan Git opsional
 
 Setelah semua file tersimpan, ulangi pemeriksaan dari root repo:
 
@@ -263,7 +263,7 @@ Buka web pada `https://localhost:8443` (laptop) atau port 8443 pada Codespaces, 
 
 *Langkah: isi form **Tulis catatan**, klik **Simpan catatan**, dan amati hasil. Fungsi: menguji alur tulis aplikasi tiga tier setelah perubahan jaringan. Cara kerja: browser POST ke nginx, diteruskan ke API, lalu API menyimpan ke PostgreSQL. Baca hasil: `201 Created` dan catatan baru tampil. Ini cuplikan uji lokal; ambil screenshot hasil sendiri.*
 
-Sebelum commit/push, isi `student.json` dan laporan, lalu pastikan private key tidak ikut Git:
+Commit/push bersifat opsional untuk referensi proyek. Pada repo pribadi, isi `student.json` dan catatan bila diperlukan, lalu pastikan private key tidak ikut Git:
 
 ```bash
 git status --short

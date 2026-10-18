@@ -20,26 +20,42 @@ Versi PDF untuk dibaca atau dicetak: [modul mahasiswa](output/pdf/MODUL_MAHASISW
 
 Verifikasi 1 Oktober 2026: Codespaces pada commit `5825663` berhasil menjalankan empat service, smoke **12 PASS/0 FAIL**, dan form web menyimpan catatan dengan **201 Created**. Solusi yang diuji lokal menghasilkan healthcheck **16 PASS/0 FAIL** dan challenge **15 PASS/0 FAIL**. Kunci jawaban tersedia terpisah; challenge pada starter memang merah sebelum dikerjakan.
 
-## Jalur kelas: GitHub Codespaces
+## Jalur lokal Windows
 
-1. Buka [repo kelas](https://github.com/SeedFlora/meet3CloudService), pilih **Use this template → Create a new repository**, lalu isi nama repo pribadi. Visibilitas repo mengikuti arahan dosen.
-2. Di repo pribadi, pilih **Code → Codespaces → Create codespace on main**. Tunggu `postCreateCommand` menyiapkan alat dan image. Bila persiapan image terputus, jalankan langkah berikut di terminal Codespace.
-3. Dari root repo Codespace:
+## 0. Clone ke laptop
 
-   ```bash
-   docker compose config -q
-   docker compose up -d --build --wait
-   docker compose ps
-   bash tests/smoke.sh
-   ```
+Buka Docker Desktop hingga **Engine running**, kemudian buka **Git Bash**. Jalankan blok ini sekali untuk membuat salinan baru di folder pengguna:
 
-4. Di panel **Ports**, buka port **8080** untuk melihat web. Jika port terdeteksi dan diminta visibilitas, biarkan **Private** untuk praktikum. Lanjutkan [langkah DNS hingga TLS](MODUL_MAHASISWA.md#2-periksa-dns-dan-konektivitas-dari-toolbox).
+```bash
+cd ~
+git clone https://github.com/SeedFlora/meet3CloudService.git meet3CloudService-local
+cd meet3CloudService-local
+pwd
+ls compose.yaml tests/smoke.sh
+```
+
+Hasil: terminal berada di `meet3CloudService-local` dan kedua file ditemukan. Buka folder ini di VS Code. Inilah root repo untuk seluruh perintah host berikut. Folder clone yang sudah tersedia boleh dibuka langsung, lalu periksa `pwd` dan dua file tersebut. Tidak perlu membuat Codespace atau repo pribadi untuk praktik lokal.
+
+
+
+Setelah clone selesai, terminal tetap di root repo. Jalankan:
+
+```bash
+docker compose config -q
+docker compose up -d --build --wait
+docker compose ps
+bash tests/smoke.sh
+```
+
+Buka <http://localhost:8080> untuk melihat web. Lanjutkan [langkah DNS hingga TLS](MODUL_MAHASISWA.md#2-periksa-dns-dan-konektivitas-dari-toolbox). Jalankan perintah satu per satu dan perhatikan kapan terminal berada di host atau di dalam toolbox.
 
 File `.devcontainer/devcontainer.json` dan `.github/workflows/ci.yml` sudah berada di **root repo**, sehingga Codespaces dan Actions dapat menemukannya.
 
-## Jalur laptop lokal
+## Persiapan dan alternatif Codespaces
 
-Pasang Docker Desktop/Engine dan Compose plugin. Clone repo pribadi Anda, lalu jalankan perintah yang sama dari root repo. Di Windows, perintah `bash tests/...` dijalankan dari Git Bash atau WSL yang tersambung ke Docker Engine. Web awal tersedia di <http://localhost:8080>. Jika port 8080, 3000, atau 5432 sedang dipakai, hentikan service lain lebih dahulu.
+Docker Desktop/Engine dan Compose plugin harus tersedia. Host port awal adalah 8080, 3000, dan 5432. Hentikan server Lab 01 dengan Ctrl+C sebelum menjalankan stack ini.
+
+Codespaces dapat dipakai sebagai alternatif melalui **Code → Codespaces → Create codespace on main**. Jalankan blok Compose yang sama dan buka web dari tab **Ports 8080**. Pada laptop, seluruh praktik berjalan lokal. Di Git Bash, awalan `MSYS_NO_PATHCONV=1` pada perintah TLS menjaga path `/lab/...` tetap menjadi path Linux di container. Awalan itu juga aman di Bash Linux.
 
 ## Alur dan hasil belajar
 

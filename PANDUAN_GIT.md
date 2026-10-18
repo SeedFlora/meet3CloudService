@@ -4,22 +4,22 @@
 
 Repo ini adalah satu lab mandiri. Jalankan semua perintah dari root, tempat `compose.yaml` berada.
 
-## Mahasiswa: buat repo dan Codespace
+## Repo pribadi opsional untuk menyimpan latihan
 
 1. Buka [SeedFlora/meet3CloudService](https://github.com/SeedFlora/meet3CloudService) setelah login GitHub. Pastikan ada label **Public template**, lalu pilih **Use this template → Create a new repository**. Buat repo milik sendiri; visibilitas sesuai arahan kelas.
-2. Dari repo sendiri pilih **Code → Codespaces → Create codespace on main**. Di Codespace, folder kerja yang dibuka adalah root repo ini.
+2. Clone repo sendiri ke laptop dan buka root repo yang berisi `compose.yaml` di VS Code. Pilih terminal Git Bash dan pakai Docker Desktop. Codespaces dapat dipakai sebagai alternatif.
 3. Isi `student.json` dengan nama, kelas, username GitHub. Jangan tulis NIM. Jalankan `bash tests/test_student.sh`.
-4. Kerjakan [modul bergambar](MODUL_MAHASISWA.md), termasuk screenshot hasil sendiri di `hasil/bukti/lab03/` dan laporan `hasil/lab03.md`.
+4. Kerjakan [modul bergambar](MODUL_MAHASISWA.md). Screenshot hasil sendiri di `hasil/bukti/lab03/` dan catatan `hasil/lab03.md` bersifat opsional.
 
 ![Halaman repo kelas dengan label Public template dan tombol Code](screenshots/lab03_github_template.png)
 
 *Langkah UI pada gambar: buka repo kelas dan pastikan label **Public template** serta branch `main` terlihat. Setelah login, klik **Use this template → Create a new repository** untuk menyalin starter ke repo Anda; jangan bekerja langsung di repo kelas. Di repo pribadi klik **Code → Codespaces → Create codespace on main**. Saat editor terbuka, baca root file `compose.yaml` dan lanjutkan perintah pada modul mahasiswa.*
 
-## Commit dan push
+## Commit dan push opsional
 
 ```bash
 git status --short
-git add -A
+git add compose.yaml web/nginx/https.conf scripts/healthcheck.sh student.json hasil
 git diff --cached --name-only
 git diff --cached --check
 git diff --cached
